@@ -1,0 +1,14 @@
+package com.example.game.enums;
+
+public enum EventType {
+    FLIGHT_DROP,
+    WEATHER_DELAY,
+    VC_FUNDING_OFFER,
+    HACKATHON_NEARBY,
+    TECH_RECRUITER_ENCOUNTER,
+    COFFEE_SHOP_DEAL,
+    OPEN_SOURCE_DRAMA,
+    HARDWARE_FAILURE,
+    TEAM_MEMBER_QUITS,
+    VIRAL_TWEET
+}

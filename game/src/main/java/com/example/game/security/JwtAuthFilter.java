@@ -29,16 +29,23 @@ public class JwtAuthFilter  extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
 
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         if(authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
         try{
+
             assert authHeader != null;
             final String jwt = authHeader.substring(7);
             final String username = jwtService.extractUsername(jwt);
-
+            System.out.println("try block");
             if(username!=null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                System.out.println("if blick");
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                 if(jwtService.isTokenValid(jwt, userDetails)){
                     UsernamePasswordAuthenticationToken auth =  new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
@@ -49,8 +56,9 @@ public class JwtAuthFilter  extends OncePerRequestFilter {
 
             filterChain.doFilter(request, response);
         } catch (Exception e){
+            e.printStackTrace();
             response.reset();
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED,"INVALID OR EXPIRED TOKEN" );
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "INVALID OR EXPIRED TOKEN");
 
         }
     }

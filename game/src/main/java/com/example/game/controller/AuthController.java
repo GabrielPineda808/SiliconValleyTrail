@@ -1,8 +1,8 @@
 package com.example.game.controller;
 
-import com.example.game.dto.LoginResponse;
-import com.example.game.dto.LoginUserDto;
-import com.example.game.dto.RegisterUserDto;
+import com.example.game.dto.response.LoginResponse;
+import com.example.game.dto.request.LoginUserRequest;
+import com.example.game.dto.request.RegisterUserRequest;
 import com.example.game.entity.User;
 import com.example.game.security.JwtService;
 import com.example.game.service.AuthService;
@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -34,11 +33,10 @@ public class AuthController {
             @ApiResponse(responseCode = "200", description = "Authenticated"),
             @ApiResponse(responseCode = "400", description = "Invalid credentials")
     })
-    public ResponseEntity<?> login(@Valid @RequestBody LoginUserDto loginUserDto) {
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginUserRequest loginUserDto) {
         User user = authService.authenticate(loginUserDto);
         String jwtToken = jwtService.generateToken(user);
         LoginResponse loginResponse = new LoginResponse(jwtToken, jwtService.getExpirationTime());
-
         return ResponseEntity.ok(loginResponse);
     }
 
@@ -48,7 +46,7 @@ public class AuthController {
             @ApiResponse(responseCode = "200", description = "Registered"),
             @ApiResponse(responseCode = "400", description = "Validation failed", content = @Content)
     })
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterUserDto registerUserDto){
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterUserRequest registerUserDto){
         User user = authService.signup(registerUserDto);
         return ResponseEntity.ok(Map.of("id", user.getId(), "Username", user.getUsername()));
     }

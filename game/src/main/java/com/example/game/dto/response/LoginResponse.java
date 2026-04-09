@@ -1,4 +1,4 @@
-package com.example.game.dto;
+package com.example.game.dto.response;
 
 public record LoginResponse(
         String token,

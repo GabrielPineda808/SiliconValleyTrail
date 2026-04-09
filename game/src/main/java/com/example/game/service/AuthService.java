@@ -1,7 +1,7 @@
 package com.example.game.service;
 
-import com.example.game.dto.LoginUserDto;
-import com.example.game.dto.RegisterUserDto;
+import com.example.game.dto.request.LoginUserRequest;
+import com.example.game.dto.request.RegisterUserRequest;
 import com.example.game.entity.User;
 import com.example.game.exceptions.UserNotFoundException;
 import com.example.game.repository.UserRepo;
@@ -24,14 +24,14 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
 
     @Transactional
-    public User signup(RegisterUserDto input){
+    public User signup(RegisterUserRequest input){
         User user =new User();
         user.setPasswordHash(passwordEncoder.encode(input.password()));
         user.setUsername(input.username());
         return userRepo.save(user);
     }
 
-    public User authenticate(LoginUserDto input){
+    public User authenticate(LoginUserRequest input){
         User user = userRepo.findByUsername(input.username()).orElseThrow(()-> new UserNotFoundException("User not found"));
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(input.username(),input.password()));
         return user;

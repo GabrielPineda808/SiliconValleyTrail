@@ -1,9 +1,9 @@
-package com.example.game.dto;
+package com.example.game.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public record RegisterUserDto(
+public record RegisterUserRequest(
         @NotBlank(message = "Username is required")
         @Size(min = 3, max = 15)
         String username,
