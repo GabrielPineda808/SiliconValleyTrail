@@ -1,13 +1,13 @@
 package com.example.game.gameLogic.event;
 
 import com.example.game.entity.GameState;
+import com.example.game.enums.EventType;
 import com.example.game.exceptions.InvalidActionException;
 import com.example.game.gameLogic.RandomProvider;
-import com.example.game.gameLogic.action.ActionResult;
+import com.example.game.gameLogic.event.records.*;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.core.JacksonException;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,113 +15,57 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 public class EventService {
-    private final ObjectMapper objectMapper;
+    private final List<GameEvent> gameEvents;
     private final RandomProvider randomProvider;
+    private final ObjectMapper objectMapper;
 
-    public PendingEvent triggerArrivalEvents(GameState gameState) {
-        double roll = randomProvider.nextDouble(0,1);
-
-        PendingEvent event = null;
-
-        if (roll < 0.15) {
-            event = new PendingEvent(
-                    "VC_FUNDING_OFFER",
-                    "VC Funding Offer",
-                    "A VC unexpectedly offers to invest in your startup.",
-                    List.of(
-                            new EventChoice("ACCEPT", "Accept the offer"),
-                            new EventChoice("DECLINE", "Decline the offer")
-                    )
-            );
-        } else if (roll < 0.30) {
-            event = new PendingEvent(
-                    "HACKATHON_NEARBY",
-                    "Hackathon Nearby",
-                    "There is a local hackathon happening right now.",
-                    List.of(
-                            new EventChoice("JOIN", "Join the hackathon"),
-                            new EventChoice("SKIP", "Skip it")
-                    )
-            );
+    public PendingEvent triggerArrivalEvent(GameState gameState) {
+        if(gameState.getPendingEventType() != null){
+            return null;
         }
 
-        if (event != null) {
-            persistPendingEvent(gameState, event);
+        List<GameEvent> eligibleEvents = gameEvents.stream().filter(gameEvent -> gameEvent.canTrigger(gameState)).toList();
+
+        if (eligibleEvents.isEmpty()) {
+            return null;
         }
 
-        return event;
+        GameEvent selected = eligibleEvents.get(
+                randomProvider.nextIntInclusive(0, eligibleEvents.size() - 1)
+        );
+
+        PendingEvent result = selected.createPendingEvent(gameState);
+
+        persistPendingEvent(gameState,result);
+
+        return result;
     }
 
-    public EventResolutionResult resolveEvent(GameState gameState, String choiceCode) {
-        if (!gameState.isEventPending() || gameState.getPendingEventType() == null || gameState.getPendingEventJson() == null) {
-            throw new InvalidActionException("No pending event to resolve");
+    public EventResult resolvePendingEvent(GameState gameState, EventOptionType chosenOption) {
+        if (!gameState.isEventPending() || gameState.getPendingEventType() == null) {
+            throw new InvalidActionException("There is no pending event to resolve.");
         }
 
-        PendingEvent event = readPendingEvent(gameState);
+        PendingEvent pendingEvent = readPendingEvent(gameState);
 
-        ActionResult result = switch (event.type()) {
-            case "VC_FUNDING_OFFER" -> resolveVcFundingOffer(gameState, choiceCode);
-            case "HACKATHON_NEARBY" -> resolveHackathonNearby(gameState, choiceCode);
-            default -> throw new InvalidActionException("Unknown event type: " + event.type());
-        };
+        validateOptionExists(pendingEvent, chosenOption);
+
+        GameEvent gameEvent = getEventHandler(gameState.getPendingEventType());
+
+        EventResult result = gameEvent.resolve(gameState, chosenOption);
 
         clearPendingEvent(gameState);
-        return new EventResolutionResult(gameState, result);
-    }
 
-    private ActionResult resolveVcFundingOffer(GameState gameState, String choiceCode) {
-        return switch (choiceCode) {
-            case "ACCEPT" -> {
-                gameState.setCash(gameState.getCash() + 300);
-                gameState.setBugs(gameState.getBugs() + 2);
-                yield new ActionResult(
-                        "You accepted the VC funding offer.",
-                        List.of("+300 cash", "+2 bugs"),
-                        true
-                );
-            }
-            case "DECLINE" -> {
-                gameState.setMotivation(gameState.getMotivation() + 5);
-                yield new ActionResult(
-                        "You declined the VC funding offer and stayed independent.",
-                        List.of("+5 motivation"),
-                        true
-                );
-            }
-            default -> throw new InvalidActionException("Invalid event choice");
-        };
-    }
+        return result;}
 
-    private ActionResult resolveHackathonNearby(GameState gameState, String choiceCode) {
-        return switch (choiceCode) {
-            case "JOIN" -> {
-                boolean win = randomProvider.nextDouble(0,1) < 0.5;
+    private void validateOptionExists(PendingEvent pendingEvent, EventOptionType chosenOption) {
+        boolean valid = pendingEvent.choices().stream()
+                .map(EventOption::optionType)
+                .anyMatch(option -> option == chosenOption);
 
-                if (win) {
-                    gameState.setCash(gameState.getCash() + 200);
-                    gameState.setBugs(Math.max(0, gameState.getBugs() - 3));
-                    yield new ActionResult(
-                            "You crushed the hackathon.",
-                            List.of("+200 cash", "-3 bugs"),
-                            true
-                    );
-                } else {
-                    gameState.setBugs(gameState.getBugs() + 3);
-                    gameState.setMotivation(Math.max(0, gameState.getMotivation() - 5));
-                    yield new ActionResult(
-                            "The hackathon went badly.",
-                            List.of("+3 bugs", "-5 motivation"),
-                            false
-                    );
-                }
-            }
-            case "SKIP" -> new ActionResult(
-                    "You skipped the hackathon.",
-                    List.of(),
-                    true
-            );
-            default -> throw new InvalidActionException("Invalid event choice");
-        };
+        if (!valid) {
+            throw new InvalidActionException("Invalid option for pending event: " + chosenOption);
+        }
     }
 
     private void persistPendingEvent(GameState gameState, PendingEvent event) {
@@ -136,7 +80,19 @@ public class EventService {
         gameState.setEventPending(true);
     }
 
+    private GameEvent getEventHandler(EventType eventType) {
+        return gameEvents.stream()
+                .filter(event -> event.getType() == eventType)
+                .findFirst()
+                .orElseThrow(() -> new InvalidActionException("No event handler found for event type: " + eventType));
+    }
+
+
     private PendingEvent readPendingEvent(GameState gameState) {
+        if (gameState.getPendingEventJson() == null || gameState.getPendingEventJson().isBlank()) {
+            throw new InvalidActionException("Pending event payload is missing.");
+        }
+
         try {
             return objectMapper.readValue(gameState.getPendingEventJson(), PendingEvent.class);
         } catch (JacksonException e) {

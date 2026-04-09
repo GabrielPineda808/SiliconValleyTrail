@@ -8,7 +8,7 @@ import com.example.game.enums.ActionType;
 import com.example.game.enums.GameStatus;
 import com.example.game.exceptions.InvalidActionException;
 import com.example.game.gameLogic.event.EventService;
-import com.example.game.gameLogic.event.PendingEvent;
+import com.example.game.gameLogic.event.records.PendingEvent;
 import com.example.game.gameLogic.service.WinLossService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -47,7 +47,7 @@ public class GameEngine {
 
         winLossService.evaluate(gameState);
         if (actionType == ActionType.TRAVEL && gameState.getStatus() == GameStatus.IN_PROGRESS ) {
-            pendingEvent = eventService.triggerArrivalEvents(gameState);
+            pendingEvent = eventService.triggerArrivalEvent(gameState);
         }
 
         return new TurnResult(gameState, actionResult, pendingEvent);

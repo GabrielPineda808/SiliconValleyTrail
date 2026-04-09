@@ -2,7 +2,7 @@ package com.example.game.gameLogic;
 
 import com.example.game.gameLogic.action.ActionResult;
 import com.example.game.entity.GameState;
-import com.example.game.gameLogic.event.PendingEvent;
+import com.example.game.gameLogic.event.records.PendingEvent;
 
 public record TurnResult(
         GameState gameState,

@@ -1,4 +1,4 @@
-package com.example.game.gameLogic.event;
+package com.example.game.gameLogic.event.records;
 
 import com.example.game.entity.GameState;
 import com.example.game.gameLogic.action.ActionResult;

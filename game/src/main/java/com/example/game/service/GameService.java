@@ -11,14 +11,15 @@ import com.example.game.exceptions.NotFoundException;
 import com.example.game.exceptions.UserNotFoundException;
 import com.example.game.gameLogic.GameEngine;
 import com.example.game.gameLogic.TurnResult;
-import com.example.game.gameLogic.event.EventResolutionResult;
+import com.example.game.gameLogic.event.records.EventOptionType;
 import com.example.game.gameLogic.event.EventService;
+import com.example.game.gameLogic.event.records.EventResult;
 import com.example.game.gameLogic.location.LocationRegistry;
+import com.example.game.gameLogic.service.WinLossService;
 import com.example.game.repository.GameStateRepo;
 import com.example.game.repository.UserRepo;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,12 +35,13 @@ public class GameService {
     private final GameEngine gameEngine;
     private final LocationRegistry locationRegistry;
     private final EventService eventService;
+    private final WinLossService winLossService;
 
     public GameState createGame(String username) {
         User user = userRepo.findByUsername(username).orElseThrow(()-> new UserNotFoundException("User not found"));
         GameState gameState;
         if (gameStateRepo.existsByUserId(user.getId())) {
-            boolean exists = gameStateRepo.findByUserAndStatus(user, GameStatus.IN_PROGRESS);
+            boolean exists = gameStateRepo.existsByUserAndStatus(user, GameStatus.IN_PROGRESS);
             if(exists) {
                 throw new GameExistsException("Game exists for this user");
             }
@@ -103,25 +105,26 @@ public class GameService {
 
     public void deleteGame(String username) {
         User user = userRepo.findByUsername(username).orElseThrow(()-> new UserNotFoundException("User not found"));
-        gameStateRepo.deleteByUser(user);
+        gameStateRepo.deleteByUserAndStatus(user, GameStatus.IN_PROGRESS);
     }
 
-    public TurnResultResponse resolvePendingEvent(String username, String choiceCode) {
+    public TurnResultResponse resolvePendingEvent(String username, EventOptionType choice) {
         User user = userRepo.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         GameState gameState = gameStateRepo.findStateByUserAndStatus(user, GameStatus.IN_PROGRESS)
                 .orElseThrow(() -> new NotFoundException("No active game found."));
 
-        EventResolutionResult result = eventService.resolveEvent(gameState, choiceCode);
+        EventResult result = eventService.resolvePendingEvent(gameState, choice);
 
-        GameState saved = gameStateRepo.save(result.gameState());
+        winLossService.evaluate(gameState);
 
-        return TurnResultResponse.from(
+        GameState saved = gameStateRepo.save(gameState);
+
+        return TurnResultResponse.fromResolvedEvent(
                 saved,
                 saved.getLocationName(),
-                result.actionResult(),
-                null
+                result
         );
     }
 

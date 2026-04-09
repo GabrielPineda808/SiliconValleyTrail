@@ -1,17 +1,15 @@
 package com.example.game.controller;
 
+import com.example.game.dto.request.PerformActionRequest;
 import com.example.game.dto.request.ResolveEventRequest;
-import com.example.game.dto.response.EventChoiceResponse;
 import com.example.game.dto.response.GameStateResponse;
 import com.example.game.dto.response.TurnResultResponse;
 import com.example.game.entity.GameState;
-import com.example.game.enums.ActionType;
 import com.example.game.service.GameService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -43,8 +41,8 @@ public class GameController {
 
     @PostMapping("/action")
     @Operation(summary = "action", description = "user performs action and affects game state")
-    public ResponseEntity<TurnResultResponse> performAction(@NonNull @RequestBody ActionType action, @AuthenticationPrincipal(expression = "username") String username) {
-        TurnResultResponse returnResponse = gameService.performAction(username, action);
+    public ResponseEntity<TurnResultResponse> performAction(@NonNull @RequestBody PerformActionRequest action, @AuthenticationPrincipal(expression = "username") String username) {
+        TurnResultResponse returnResponse = gameService.performAction(username, action.action());
         return ResponseEntity.ok(returnResponse);
     }
 

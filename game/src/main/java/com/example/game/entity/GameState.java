@@ -1,6 +1,7 @@
 package com.example.game.entity;
 
 import com.example.game.audit.AuditableEntity;
+import com.example.game.enums.EventType;
 import com.example.game.enums.GameStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -61,8 +62,8 @@ public class GameState extends AuditableEntity {
     private String stateJson;
 
     @Column
-    private String pendingEventType;
-    @Column
+    private EventType pendingEventType;
+    @Column(columnDefinition = "TEXT")
     private String pendingEventJson;
 
     @Column(nullable = false)

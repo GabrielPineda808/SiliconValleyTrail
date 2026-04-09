@@ -3,8 +3,9 @@ package com.example.game.dto.response;
 import com.example.game.gameLogic.action.ActionResult;
 import com.example.game.entity.GameState;
 import com.example.game.enums.GameStatus;
-import com.example.game.gameLogic.event.EventChoice;
-import com.example.game.gameLogic.event.PendingEvent;
+import com.example.game.gameLogic.event.records.EventChoice;
+import com.example.game.gameLogic.event.records.EventResult;
+import com.example.game.gameLogic.event.records.PendingEvent;
 
 import java.util.List;
 
@@ -57,8 +58,30 @@ public record TurnResultResponse(
                 pendingEvent.title(),
                 pendingEvent.description(),
                 pendingEvent.choices().stream()
-                        .map(choice -> new EventChoice(choice.code(), choice.choice()))
+                        .map(choice -> new EventChoice(choice.label(), choice.optionType()))
                         .toList()
+        );
+    }
+
+    public static TurnResultResponse fromResolvedEvent(
+            GameState gameState,
+            String locationName,
+            EventResult eventResult
+    ) {
+        return new TurnResultResponse(
+                gameState.getId(),
+                gameState.getGas(),
+                gameState.getCash(),
+                gameState.getBugs(),
+                gameState.getCoffee(),
+                gameState.getMotivation(),
+                gameState.getLocationIndex(),
+                locationName,
+                gameState.getDay(),
+                gameState.getStatus(),
+                eventResult.outcome(),
+                eventResult.effects(),
+                null
         );
     }
 }
