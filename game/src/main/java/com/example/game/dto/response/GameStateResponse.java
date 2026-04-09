@@ -13,7 +13,9 @@ public record GameStateResponse(
         Integer locationIndex,
         String locationName,
         Integer day,
-        GameStatus status
+        GameStatus status,
+        String eventJson
+
 ) {
     public static GameStateResponse from(GameState gameState) {
         return new GameStateResponse(
@@ -26,7 +28,8 @@ public record GameStateResponse(
                 gameState.getLocationIndex(),
                 gameState.getLocationName(),
                 gameState.getDay(),
-                gameState.getStatus()
+                gameState.getStatus(),
+                gameState.getPendingEventJson()
         );
     }
 }

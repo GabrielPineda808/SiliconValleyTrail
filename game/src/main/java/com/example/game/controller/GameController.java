@@ -1,5 +1,7 @@
 package com.example.game.controller;
 
+import com.example.game.dto.request.ResolveEventRequest;
+import com.example.game.dto.response.EventChoiceResponse;
 import com.example.game.dto.response.GameStateResponse;
 import com.example.game.dto.response.TurnResultResponse;
 import com.example.game.entity.GameState;
@@ -52,7 +54,10 @@ public class GameController {
     }
 
     @PostMapping("/event/choice")
-    public void eventChoice(@NonNull@RequestBody String choice,@AuthenticationPrincipal(expression = "username") String username) {
+    public ResponseEntity<TurnResultResponse> eventChoice(@NonNull@RequestBody ResolveEventRequest request, @AuthenticationPrincipal(expression = "username") String username) {
+        return ResponseEntity.ok(
+                gameService.resolvePendingEvent(username, request.choice())
+        );
     }
 
 }

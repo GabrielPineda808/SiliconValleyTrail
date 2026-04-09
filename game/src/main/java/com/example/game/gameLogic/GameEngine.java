@@ -7,7 +7,8 @@ import com.example.game.entity.GameState;
 import com.example.game.enums.ActionType;
 import com.example.game.enums.GameStatus;
 import com.example.game.exceptions.InvalidActionException;
-import com.example.game.gameLogic.service.EventService;
+import com.example.game.gameLogic.event.EventService;
+import com.example.game.gameLogic.event.PendingEvent;
 import com.example.game.gameLogic.service.WinLossService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -36,19 +37,20 @@ public class GameEngine {
         }
 
         ActionResult actionResult = action.execute(gameState);
-//        EventResult eventResult = null;
 
 //        applyPassiveCosts(gameState);
         updateCoffeeZeroStreak(gameState);
         gameState.setDay(gameState.getDay() + 1);
+        PendingEvent pendingEvent = null;
 
-//        if (actionResult.travelOccurred()) {
-//            eventService.triggerArrivalEvents(gameState);
-//        }
+
 
         winLossService.evaluate(gameState);
+        if (actionType == ActionType.TRAVEL && gameState.getStatus() == GameStatus.IN_PROGRESS ) {
+            pendingEvent = eventService.triggerArrivalEvents(gameState);
+        }
 
-        return new TurnResult(gameState, actionResult);
+        return new TurnResult(gameState, actionResult, pendingEvent);
     }
 
 //    private void applyPassiveCosts(GameState gameState) {

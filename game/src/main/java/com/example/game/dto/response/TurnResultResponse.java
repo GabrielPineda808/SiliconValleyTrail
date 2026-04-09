@@ -3,6 +3,8 @@ package com.example.game.dto.response;
 import com.example.game.gameLogic.action.ActionResult;
 import com.example.game.entity.GameState;
 import com.example.game.enums.GameStatus;
+import com.example.game.gameLogic.event.EventChoice;
+import com.example.game.gameLogic.event.PendingEvent;
 
 import java.util.List;
 
@@ -18,12 +20,14 @@ public record TurnResultResponse(
         Integer day,
         GameStatus status,
         String message,
-        List<String> effects
+        List<String> effects,
+        PendingEventResponse pendingEvent
 ) {
     public static TurnResultResponse from(
             GameState gameState,
             String locationName,
-            ActionResult actionResult
+            ActionResult actionResult,
+            PendingEvent pendingEvent
     ) {
         return new TurnResultResponse(
                 gameState.getId(),
@@ -37,7 +41,24 @@ public record TurnResultResponse(
                 gameState.getDay(),
                 gameState.getStatus(),
                 actionResult.message(),
-                actionResult.effects()
+                actionResult.effects(),
+                toPendingEventResponse(pendingEvent)
+
+        );
+    }
+
+    private static PendingEventResponse toPendingEventResponse(PendingEvent pendingEvent) {
+        if (pendingEvent == null) {
+            return null;
+        }
+
+        return new PendingEventResponse(
+                pendingEvent.type(),
+                pendingEvent.title(),
+                pendingEvent.description(),
+                pendingEvent.choices().stream()
+                        .map(choice -> new EventChoice(choice.code(), choice.choice()))
+                        .toList()
         );
     }
 }
