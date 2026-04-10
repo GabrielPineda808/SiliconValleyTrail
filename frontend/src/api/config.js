@@ -1,2 +1,1 @@
-export const API_BASE_URL =
-  'https://siliconvalleytrailbackend.onrender.com' || 'http://localhost:8080'
+export const API_BASE_URL ='https://siliconvalleytrailbackend.onrender.com' /*set to localhost8080 for dev*/
