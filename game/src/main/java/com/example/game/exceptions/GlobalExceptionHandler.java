@@ -1,13 +1,21 @@
 package com.example.game.exceptions;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.List;
+
+/**
+ * Centralized mapping from application exceptions to API error responses.
+ */
+@Hidden
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
@@ -80,6 +88,30 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(
+            MethodArgumentNotValidException ex, HttpServletRequest request
+    ) {
+        log.warn("Validation failed: {}", ex.getMessage());
+        ErrorResponse errorResponse = new ErrorResponse(
+                "VALIDATION_FAILED",
+                "Request validation failed",
+                HttpStatus.BAD_REQUEST.value(),
+                request.getRequestURI()
+        );
+        List<ErrorResponse.FieldError> fieldErrors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(fieldError -> new ErrorResponse.FieldError(
+                        fieldError.getField(),
+                        fieldError.getRejectedValue(),
+                        fieldError.getDefaultMessage()
+                ))
+                .toList();
+        errorResponse.setFieldErrors(fieldErrors);
+        return ResponseEntity.badRequest().body(errorResponse);
     }
 
     @ExceptionHandler(Exception.class)
