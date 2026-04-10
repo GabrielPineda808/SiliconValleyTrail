@@ -114,19 +114,25 @@ Example:
 CREATE DATABASE silicon;
 ```
 
-### 4. Create a local `.env`
+### 4. Create a backend `.env`
 
-The application imports environment variables from a local `.env` file.
+The backend imports environment variables from a local `.env` file and uses Spring profiles to choose the database connection.
 
-Create `game/.env` with values like these:
+Create `backend/.env` with values like these:
 
 ```env
-URL=jdbc:postgresql://localhost:5432/silicon
-USERNAME=postgres
-PASSWORD=your_password_here
+SPRING_PROFILES_ACTIVE=local
+LOCAL_DB_URL=jdbc:postgresql://localhost:5432/silicon
+LOCAL_DB_USERNAME=postgres
+LOCAL_DB_PASSWORD=your_password_here
+SUPABASE_DB_URL=jdbc:postgresql://db.your-project-ref.supabase.co:5432/postgres?sslmode=require
+SUPABASE_DB_USERNAME=postgres
+SUPABASE_DB_PASSWORD=your_supabase_password_here
 JWT_SECRET_KEY=replace_with_a_long_random_secret
 JWT_EXP_TIME=3600000
 ```
+
+Use `local` for a local PostgreSQL database and switch `SPRING_PROFILES_ACTIVE` to `prod` when you want the backend to use the Supabase connection values instead.
 
 ### 5. Run the application
 
