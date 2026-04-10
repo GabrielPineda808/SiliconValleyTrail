@@ -56,18 +56,33 @@ The game also includes **mock/fallback clients** so it can continue running when
 ## Project structure
 
 ```text
-    - controller/ – REST endpoints for auth and game actions
-    - service/ – business logic and coordination between layers
-    - repository/ – database access through Spring Data JPA
-    - entity/ – persisted domain models such as User and GameState
-    - dto/ – request and response objects used by the API
-    - security/ – JWT authentication, filters, and token handling
-    - gameLogic/ – turn processing, actions, events, and travel logic
-    - exceptions/ – custom exceptions and centralized error handling
-    - enums/ – shared enums like ActionType and GameStatus
-    - config/ – Spring and application configuration
-    - resources/ – app config and database-related files
-    - test/ – unit and integration tests
+    -backend
+      - controller/ – REST endpoints for auth and game actions
+      - service/ – business logic and coordination between layers
+      - repository/ – database access through Spring Data JPA
+      - entity/ – persisted domain models such as User and GameState
+      - dto/ – request and response objects used by the API
+      - security/ – JWT authentication, filters, and token handling
+      - gameLogic/ – turn processing, actions, events, and travel logic
+      - exceptions/ – custom exceptions and centralized error handling
+      - enums/ – shared enums like ActionType and GameStatus
+      - config/ – Spring and application configuration
+      - resources/ – app config and database-related files
+      - test/ – unit and integration tests
+    -frontend
+      - src/    - app source code
+      - api/     - backend requests
+      - components/  - reusable UI pieces
+      - pages/        - main screens
+      - hooks/        - custom React hooks
+      - context/      - shared auth state
+      - utils/        - helper functions
+      - App.jsx       - root app component
+      - main.jsx      - app entry point
+      - index.css     - global styles
+      - package.json  - project scripts
+      - .env.example  - sample env values
+      - README.md     - frontend notes
 ```
 
 ## Quick start
@@ -143,6 +158,20 @@ Current behavior:
 - `MockFlightClient` calls the live OpenSky client first and falls back to a random chance when the call fails.
 
 That means **no API key is required** for normal local gameplay.
+
+## Frontend
+
+The project also includes a React + Vite frontend in `frontend/`.
+
+For frontend setup details, environment configuration, and additional notes, see `frontend/README.md`.
+
+Minimal startup:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
 ## Authentication flow
 
@@ -339,5 +368,3 @@ Pending events are stored so that the player can leave and resume without losing
 
 - improve API caching and rate-limit handling
 - formalize profiles for `mock`, `live`, and `test`
-
-
