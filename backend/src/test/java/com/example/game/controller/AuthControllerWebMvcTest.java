@@ -2,6 +2,8 @@ package com.example.game.controller;
 
 import com.example.game.dto.request.LoginUserRequest;
 import com.example.game.dto.request.RegisterUserRequest;
+import com.example.game.dto.response.LoginResponse;
+import com.example.game.dto.response.RegisterUserResponse;
 import com.example.game.entity.User;
 import com.example.game.security.JwtService;
 import com.example.game.service.AuthService;
@@ -42,7 +44,9 @@ class AuthControllerWebMvcTest {
         user.setUsername("gabe");
         user.setPasswordHash("encoded");
 
-        when(authService.authenticate(new LoginUserRequest("gabe", "password123"))).thenReturn(user);
+        LoginResponse loginResponse = new LoginResponse("jwt-token", 3600L);
+
+        when(authService.authenticate(new LoginUserRequest("gabe", "password123"))).thenReturn(loginResponse);
         when(jwtService.generateToken(user)).thenReturn("jwt-token");
         when(jwtService.getExpirationTime()).thenReturn(3600L);
 
@@ -61,8 +65,9 @@ class AuthControllerWebMvcTest {
         User user = new User();
         user.setId(22L);
         user.setUsername("gabe");
+        RegisterUserResponse response = new RegisterUserResponse(user.getId(), user.getUsername());
 
-        when(authService.signup(new RegisterUserRequest("gabe", "password123"))).thenReturn(user);
+        when(authService.signup(new RegisterUserRequest("gabe", "password123"))).thenReturn(response);
 
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)

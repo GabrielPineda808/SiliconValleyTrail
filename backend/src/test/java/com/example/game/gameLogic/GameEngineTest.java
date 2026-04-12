@@ -69,7 +69,7 @@ class GameEngineTest {
     void processTurnRejectsUnexecutableActions() {
         GameState gameState = baseGameState();
         when(actionResolver.resolve(ActionType.FIX_BUGS)).thenReturn(playerAction);
-        when(playerAction.canExecute(gameState)).thenReturn(false);
+        when(playerAction.canExecute(gameState)).thenReturn(Boolean.valueOf(false));
 
         assertThatThrownBy(() -> gameEngine.processTurn(gameState, ActionType.FIX_BUGS))
                 .isInstanceOf(InvalidActionException.class)
@@ -79,12 +79,12 @@ class GameEngineTest {
     @Test
     void processTurnAdvancesDayResetsCoffeeStreakAndDoesNotTriggerEventForNonTravel() {
         GameState gameState = baseGameState();
-        gameState.setCoffee(10);
-        gameState.setCoffeeZeroStreak(3);
+        gameState.setCoffee(Integer.valueOf(10));
+        gameState.setCoffeeZeroStreak(Integer.valueOf(3));
         ActionResult actionResult = new ActionResult("Rested", List.of("+10 motivation"), false);
 
         when(actionResolver.resolve(ActionType.REST)).thenReturn(playerAction);
-        when(playerAction.canExecute(gameState)).thenReturn(true);
+        when(playerAction.canExecute(gameState)).thenReturn(Boolean.valueOf(true));
         when(playerAction.execute(gameState)).thenReturn(actionResult);
 
         TurnResult result = gameEngine.processTurn(gameState, ActionType.REST);
@@ -100,8 +100,8 @@ class GameEngineTest {
     @Test
     void processTurnTriggersArrivalEventForTravelAndTracksCoffeeDepletion() {
         GameState gameState = baseGameState();
-        gameState.setCoffee(0);
-        gameState.setCoffeeZeroStreak(1);
+        gameState.setCoffee(Integer.valueOf(0));
+        gameState.setCoffeeZeroStreak(Integer.valueOf(1));
         ActionResult actionResult = new ActionResult("Traveled", List.of("-20 gas"), true);
         PendingEvent pendingEvent = new PendingEvent(
                 EventType.FLIGHT_DROP,
@@ -111,7 +111,7 @@ class GameEngineTest {
         );
 
         when(actionResolver.resolve(ActionType.TRAVEL)).thenReturn(playerAction);
-        when(playerAction.canExecute(gameState)).thenReturn(true);
+        when(playerAction.canExecute(gameState)).thenReturn(Boolean.valueOf(true));
         when(playerAction.execute(gameState)).thenReturn(actionResult);
         when(eventService.triggerArrivalEvent(gameState)).thenReturn(pendingEvent);
 
@@ -126,16 +126,16 @@ class GameEngineTest {
 
     private static GameState baseGameState() {
         return GameState.builder()
-                .gas(100)
-                .cash(500)
-                .bugs(0)
-                .coffee(50)
-                .motivation(100)
-                .locationIndex(0)
+                .gas(Integer.valueOf(100))
+                .cash(Integer.valueOf(500))
+                .bugs(Integer.valueOf(0))
+                .coffee(Integer.valueOf(50))
+                .motivation(Integer.valueOf(100))
+                .locationIndex(Integer.valueOf(0))
                 .locationName("San Jose")
-                .day(1)
+                .day(Integer.valueOf(1))
                 .status(GameStatus.IN_PROGRESS)
-                .coffeeZeroStreak(0)
+                .coffeeZeroStreak(Integer.valueOf(0))
                 .eventPending(false)
                 .build();
     }
