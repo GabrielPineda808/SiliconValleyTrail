@@ -45,7 +45,7 @@ public class SecurityConfig {
 
     public CorsConfigurationSource corsConfigSource(){
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOrigins(List.of("http://localhost:3000","http://localhost:8080", "http://localhost:5173"));
+        cfg.setAllowedOrigins(List.of("https://siliconvalleytrail.onrender.com","http://localhost:3000","http://localhost:8080", "http://localhost:5173"));
         cfg.setAllowedMethods(List.of("GET","POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         cfg.setAllowedHeaders(List.of("*"));
         cfg.setExposedHeaders(List.of("Authorization"));
