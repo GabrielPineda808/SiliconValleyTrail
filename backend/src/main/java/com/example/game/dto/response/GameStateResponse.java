@@ -2,9 +2,7 @@ package com.example.game.dto.response;
 
 import com.example.game.entity.GameState;
 import com.example.game.enums.GameStatus;
-import com.example.game.gameLogic.event.records.PendingEvent;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.game.gameLogic.records.PendingEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

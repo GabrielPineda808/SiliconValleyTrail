@@ -1,4 +1,4 @@
-package com.example.game.enums;
+package com.example.game.gameLogic.action;
 
 public enum ActionType {
     TRAVEL,

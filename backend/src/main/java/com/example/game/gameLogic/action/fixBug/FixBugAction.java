@@ -4,7 +4,7 @@ import com.example.game.gameLogic.action.ActionResult;
 import com.example.game.gameLogic.action.PlayerAction;
 import com.example.game.gameLogic.RandomProvider;
 import com.example.game.entity.GameState;
-import com.example.game.enums.ActionType;
+import com.example.game.gameLogic.action.ActionType;
 import com.example.game.exceptions.InvalidActionException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -25,7 +25,7 @@ public class FixBugAction implements PlayerAction {
 
     @Override
     public boolean canExecute(GameState gameState) {
-        return gameState.getCoffee() >= COFFEE_COST && gameState.getBugs() > 0;
+        return gameState.getBugs() > 0;
     }
 
     @Override
@@ -34,16 +34,17 @@ public class FixBugAction implements PlayerAction {
             throw new InvalidActionException("Cannot fix bugs. Not enough coffee or no bugs to fix.");
         }
 
-        int bugsFixed = randomProvider.nextIntInclusive(2, 4);
+        int bugsFixed = randomProvider.nextIntInclusive(1, 4);
         int actualFixed = Math.min(bugsFixed, gameState.getBugs());
+        int coffeeSpent = Math.min(COFFEE_COST, gameState.getCoffee());
 
-        gameState.setCoffee(gameState.getCoffee() - COFFEE_COST);
+        gameState.setCoffee(gameState.getCoffee() - coffeeSpent);
         gameState.setBugs(gameState.getBugs() - actualFixed);
 
         return new ActionResult(
                 "The team fixed some bugs.",
                 List.of(
-                        "-" + COFFEE_COST + " coffee",
+                        "-" + coffeeSpent + " coffee",
                         "-" + actualFixed + " bugs"
                 ),
                 false

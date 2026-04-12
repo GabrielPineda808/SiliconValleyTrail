@@ -389,7 +389,7 @@
                                                                        "url":  "{{baseUrl}}/game/action",
                                                                        "body":  {
                                                                                     "mode":  "raw",
-                                                                                    "raw":  "{\n  \"action\": \"FIX_BUG\"\n}",
+                                                                                    "raw":  "{\n  \"action\": \"FIX_BUGS\"\n}",
                                                                                     "options":  {
                                                                                                     "raw":  {
                                                                                                                 "language":  "json"

@@ -1,6 +1,6 @@
 package com.example.game.dto.request;
 
-import com.example.game.enums.ActionType;
+import com.example.game.gameLogic.action.ActionType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 

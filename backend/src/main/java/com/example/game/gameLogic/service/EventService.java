@@ -1,14 +1,18 @@
-package com.example.game.gameLogic.event;
+package com.example.game.gameLogic.service;
+
 
 import com.example.game.entity.GameState;
 import com.example.game.enums.EventType;
 import com.example.game.exceptions.InvalidActionException;
 import com.example.game.gameLogic.RandomProvider;
-import com.example.game.gameLogic.event.records.*;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.core.JacksonException;
+import com.example.game.gameLogic.records.EventOptionType;
+import com.example.game.gameLogic.records.EventResult;
+import com.example.game.gameLogic.records.GameEvent;
+import com.example.game.gameLogic.records.PendingEvent;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
@@ -20,9 +24,6 @@ public class EventService {
     private final ObjectMapper objectMapper;
 
     public PendingEvent triggerArrivalEvent(GameState gameState) {
-        if(gameState.getPendingEventType() != null){
-            return null;
-        }
 
         List<GameEvent> eligibleEvents = gameEvents.stream().filter(gameEvent -> gameEvent.canTrigger(gameState)).toList();
 
@@ -36,21 +37,21 @@ public class EventService {
 
         PendingEvent result = selected.createPendingEvent(gameState);
 
-        persistPendingEvent(gameState,result);
+        savePendingEvent(gameState,result);
 
         return result;
     }
 
     public EventResult resolvePendingEvent(GameState gameState, EventOptionType chosenOption) {
-        if (!gameState.isEventPending() || gameState.getPendingEventType() == null) {
+        if (!gameState.isEventPending() || gameState.getPendingEventJson() == null) {
             throw new InvalidActionException("There is no pending event to resolve.");
         }
 
         PendingEvent pendingEvent = readPendingEvent(gameState);
 
-        validateOptionExists(pendingEvent, chosenOption);
+        validateChosenOptionExists(pendingEvent, chosenOption);
 
-        GameEvent gameEvent = getEventHandler(gameState.getPendingEventType());
+        GameEvent gameEvent = loadEvent(pendingEvent.type());
 
         EventResult result = gameEvent.resolve(gameState, chosenOption);
 
@@ -58,19 +59,16 @@ public class EventService {
 
         return result;}
 
-    private void validateOptionExists(PendingEvent pendingEvent, EventOptionType chosenOption) {
+    private void validateChosenOptionExists(PendingEvent pendingEvent, EventOptionType chosenOption) {
         boolean valid = pendingEvent.choices().stream()
-                .map(EventOption::optionType)
-                .anyMatch(option -> option == chosenOption);
+                .anyMatch(option -> option.optionType() == chosenOption);
 
         if (!valid) {
             throw new InvalidActionException("Invalid option for pending event: " + chosenOption);
         }
     }
 
-    private void persistPendingEvent(GameState gameState, PendingEvent event) {
-        gameState.setPendingEventType(event.type());
-
+    private void savePendingEvent(GameState gameState, PendingEvent event) {
         try {
             gameState.setPendingEventJson(objectMapper.writeValueAsString(event));
         } catch (JacksonException e) {
@@ -80,7 +78,7 @@ public class EventService {
         gameState.setEventPending(true);
     }
 
-    private GameEvent getEventHandler(EventType eventType) {
+    private GameEvent loadEvent(EventType eventType) {
         return gameEvents.stream()
                 .filter(event -> event.getType() == eventType)
                 .findFirst()
@@ -101,7 +99,6 @@ public class EventService {
     }
 
     private void clearPendingEvent(GameState gameState) {
-        gameState.setPendingEventType(null);
         gameState.setPendingEventJson(null);
         gameState.setEventPending(false);
     }

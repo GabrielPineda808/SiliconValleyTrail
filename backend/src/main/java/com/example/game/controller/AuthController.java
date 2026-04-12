@@ -4,9 +4,9 @@ import com.example.game.dto.response.LoginResponse;
 import com.example.game.dto.request.LoginUserRequest;
 import com.example.game.dto.request.RegisterUserRequest;
 import com.example.game.dto.response.RegisterUserResponse;
-import com.example.game.entity.User;
+
 import com.example.game.exceptions.ErrorResponse;
-import com.example.game.security.JwtService;
+
 import com.example.game.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 @Tag(name = "Authentication", description = "User registration and login")
 public class AuthController {
-    private final JwtService jwtService;
     private final AuthService authService;
 
     /**

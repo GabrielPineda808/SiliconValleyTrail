@@ -4,7 +4,7 @@ import com.example.game.gameLogic.action.ActionResult;
 import com.example.game.gameLogic.action.PlayerAction;
 import com.example.game.gameLogic.RandomProvider;
 import com.example.game.entity.GameState;
-import com.example.game.enums.ActionType;
+import com.example.game.gameLogic.action.ActionType;
 import com.example.game.exceptions.InvalidActionException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -37,8 +37,9 @@ public class FreelanceAction  implements PlayerAction {
         }
 
         int cashEarned = randomProvider.nextIntInclusive(80, 180);
+        int coffeeSpent = Math.min(COFFEE_COST, gameState.getCoffee());
 
-        gameState.setCoffee(gameState.getCoffee() - COFFEE_COST);
+        gameState.setCoffee(gameState.getCoffee() - coffeeSpent);
         gameState.setMotivation(gameState.getMotivation() - MOTIVATION_COST);
         gameState.setCash(gameState.getCash() + cashEarned);
 
@@ -46,7 +47,7 @@ public class FreelanceAction  implements PlayerAction {
                 "Freelance work brought in some cash.",
                 List.of(
                         "+" + cashEarned + " cash",
-                        "-" + COFFEE_COST + " coffee",
+                        "-" + coffeeSpent + " coffee",
                         "-" + MOTIVATION_COST + " motivation"
                 ),
                 false

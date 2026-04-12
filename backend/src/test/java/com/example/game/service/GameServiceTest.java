@@ -3,22 +3,21 @@ package com.example.game.service;
 import com.example.game.dto.response.TurnResultResponse;
 import com.example.game.entity.GameState;
 import com.example.game.entity.User;
-import com.example.game.enums.ActionType;
+import com.example.game.gameLogic.action.ActionType;
 import com.example.game.enums.EventType;
 import com.example.game.enums.GameStatus;
 import com.example.game.exceptions.GameExistsException;
 import com.example.game.exceptions.NotFoundException;
 import com.example.game.gameLogic.GameEngine;
-import com.example.game.gameLogic.TurnResult;
+import com.example.game.gameLogic.records.TurnResult;
 import com.example.game.gameLogic.action.ActionResult;
-import com.example.game.gameLogic.event.EventService;
-import com.example.game.gameLogic.event.records.EventChoice;
-import com.example.game.gameLogic.event.records.EventOption;
-import com.example.game.gameLogic.event.records.EventOptionType;
-import com.example.game.gameLogic.event.records.EventResult;
-import com.example.game.gameLogic.event.records.PendingEvent;
+import com.example.game.gameLogic.records.EventOption;
+import com.example.game.gameLogic.records.EventOptionType;
+import com.example.game.gameLogic.records.EventResult;
+import com.example.game.gameLogic.records.PendingEvent;
 import com.example.game.gameLogic.location.GameLocation;
 import com.example.game.gameLogic.location.LocationRegistry;
+import com.example.game.gameLogic.service.EventService;
 import com.example.game.gameLogic.service.WinLossService;
 import com.example.game.repository.GameStateRepo;
 import com.example.game.repository.UserRepo;
@@ -108,14 +107,14 @@ class GameServiceTest {
                         new EventOption(EventOptionType.DECLINE, "Decline", "Stay lean")
                 )
         );
-        TurnResult turnResult = new TurnResult(activeGame, actionResult, pendingEvent);
+        TurnResult turnResult = new TurnResult(activeGame, actionResult, pendingEvent, "");
 
         when(userRepo.findByUsername("gabe")).thenReturn(Optional.of(user));
         when(gameStateRepo.findStateByUserAndStatus(user, GameStatus.IN_PROGRESS)).thenReturn(Optional.of(activeGame));
         when(gameEngine.processTurn(activeGame, ActionType.TRAVEL)).thenReturn(turnResult);
         when(gameStateRepo.save(activeGame)).thenReturn(activeGame);
         when(locationRegistry.getByIndex(activeGame.getLocationIndex()))
-                .thenReturn(new GameLocation(activeGame.getLocationIndex(), "San Francisco", 0, 0));
+                .thenReturn(new GameLocation( "San Francisco", 0, 0));
 
         TurnResultResponse response = gameService.performAction("gabe", ActionType.TRAVEL);
 
@@ -126,8 +125,8 @@ class GameServiceTest {
         assertThat(response.pendingEvent().type()).isEqualTo(EventType.VC_FUNDING_OFFER);
         assertThat(response.pendingEvent().choices())
                 .containsExactly(
-                        new EventChoice("Accept", EventOptionType.ACCEPT),
-                        new EventChoice("Decline", EventOptionType.DECLINE)
+                        new EventOption("Accept", EventOptionType.ACCEPT),
+                        new EventOption("Decline", EventOptionType.DECLINE)
                 );
     }
 

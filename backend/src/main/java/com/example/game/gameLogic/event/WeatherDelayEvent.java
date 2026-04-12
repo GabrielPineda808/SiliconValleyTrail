@@ -1,23 +1,18 @@
-package com.example.game.gameLogic.event.events;
+package com.example.game.gameLogic.event;
 
 
 
 import com.example.game.entity.GameState;
 import com.example.game.enums.EventType;
 import com.example.game.gameLogic.RandomProvider;
-import com.example.game.gameLogic.event.records.EventOptionType;
 import com.example.game.gameLogic.event.api.WeatherClient;
-import com.example.game.gameLogic.event.records.EventOption;
-import com.example.game.gameLogic.event.records.EventResult;
-import com.example.game.gameLogic.event.records.GameEvent;
-import com.example.game.gameLogic.event.records.PendingEvent;
 import com.example.game.gameLogic.location.GameLocation;
 import com.example.game.gameLogic.location.LocationRegistry;
+import com.example.game.gameLogic.records.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor

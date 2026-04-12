@@ -1,4 +1,4 @@
-package com.example.game.gameLogic.event.records;
+package com.example.game.gameLogic.records;
 
 public record EventOption(
         EventOptionType optionType,

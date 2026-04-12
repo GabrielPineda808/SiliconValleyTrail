@@ -3,9 +3,8 @@ package com.example.game.dto.response;
 import com.example.game.gameLogic.action.ActionResult;
 import com.example.game.entity.GameState;
 import com.example.game.enums.GameStatus;
-import com.example.game.gameLogic.event.records.EventChoice;
-import com.example.game.gameLogic.event.records.EventResult;
-import com.example.game.gameLogic.event.records.PendingEvent;
+import com.example.game.gameLogic.records.EventResult;
+import com.example.game.gameLogic.records.PendingEvent;
 
 import java.util.List;
 

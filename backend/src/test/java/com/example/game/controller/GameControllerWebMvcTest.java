@@ -2,12 +2,12 @@ package com.example.game.controller;
 
 import com.example.game.dto.response.PendingEventResponse;
 import com.example.game.dto.response.TurnResultResponse;
-import com.example.game.enums.ActionType;
+import com.example.game.gameLogic.action.ActionType;
 import com.example.game.enums.EventType;
 import com.example.game.enums.GameStatus;
 import com.example.game.exceptions.NotFoundException;
-import com.example.game.gameLogic.event.records.EventChoice;
-import com.example.game.gameLogic.event.records.EventOptionType;
+import com.example.game.gameLogic.records.EventOption;
+import com.example.game.gameLogic.records.EventOptionType;
 import com.example.game.service.GameService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -59,7 +59,7 @@ class GameControllerWebMvcTest {
                 EventType.VC_FUNDING_OFFER,
                 "Pitch deck",
                 "A VC reaches out",
-                List.of(new EventChoice("Accept", EventOptionType.ACCEPT))
+                List.of(new EventOption("Accept", EventOptionType.ACCEPT))
         );
         TurnResultResponse response = new TurnResultResponse(
                 5L,

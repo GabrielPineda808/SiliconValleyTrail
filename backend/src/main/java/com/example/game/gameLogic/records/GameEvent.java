@@ -1,9 +1,7 @@
-package com.example.game.gameLogic.event.records;
+package com.example.game.gameLogic.records;
 
 import com.example.game.entity.GameState;
 import com.example.game.enums.EventType;
-
-import java.util.Optional;
 
 public interface GameEvent {
     EventType getType();

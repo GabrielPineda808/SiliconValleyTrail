@@ -4,7 +4,7 @@ import com.example.game.gameLogic.action.ActionResult;
 import com.example.game.gameLogic.action.PlayerAction;
 import com.example.game.gameLogic.RandomProvider;
 import com.example.game.entity.GameState;
-import com.example.game.enums.ActionType;
+import com.example.game.gameLogic.action.ActionType;
 import com.example.game.exceptions.InvalidActionException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

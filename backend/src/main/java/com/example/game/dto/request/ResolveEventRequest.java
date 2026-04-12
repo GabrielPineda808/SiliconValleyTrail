@@ -1,6 +1,6 @@
 package com.example.game.dto.request;
 
-import com.example.game.gameLogic.event.records.EventOptionType;
+import com.example.game.gameLogic.records.EventOptionType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 

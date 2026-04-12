@@ -1,10 +1,22 @@
 package com.example.game.gameLogic.service;
 
 import com.example.game.entity.GameState;
+import com.example.game.enums.EventType;
 import com.example.game.enums.GameStatus;
+import com.example.game.exceptions.InvalidActionException;
+import com.example.game.gameLogic.RandomProvider;
 import com.example.game.gameLogic.location.LocationRegistry;
+import com.example.game.gameLogic.records.EventOptionType;
+import com.example.game.gameLogic.records.EventResult;
+import com.example.game.gameLogic.records.GameEvent;
+import com.example.game.gameLogic.records.PendingEvent;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+
+import java.util.List;
 
 @Component
 @AllArgsConstructor

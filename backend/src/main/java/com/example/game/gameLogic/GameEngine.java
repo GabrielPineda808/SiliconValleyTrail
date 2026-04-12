@@ -4,11 +4,12 @@ import com.example.game.gameLogic.action.ActionResolver;
 import com.example.game.gameLogic.action.ActionResult;
 import com.example.game.gameLogic.action.PlayerAction;
 import com.example.game.entity.GameState;
-import com.example.game.enums.ActionType;
+import com.example.game.gameLogic.action.ActionType;
 import com.example.game.enums.GameStatus;
 import com.example.game.exceptions.InvalidActionException;
-import com.example.game.gameLogic.event.EventService;
-import com.example.game.gameLogic.event.records.PendingEvent;
+import com.example.game.gameLogic.records.PendingEvent;
+import com.example.game.gameLogic.records.TurnResult;
+import com.example.game.gameLogic.service.EventService;
 import com.example.game.gameLogic.service.WinLossService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -33,24 +34,29 @@ public class GameEngine {
         PlayerAction action = actionResolver.resolve(actionType);
 
         if (!action.canExecute(gameState)) {
-            throw new InvalidActionException("Action cannot be executed with current resources.");
+            throw new InvalidActionException("Action cannot be executed.");
         }
 
         ActionResult actionResult = action.execute(gameState);
 
-//        applyPassiveCosts(gameState);
+        // applyPassiveCosts(gameState);
+
         updateCoffeeZeroStreak(gameState);
-        gameState.setDay(gameState.getDay() + 1);
-        PendingEvent pendingEvent = null;
-
-
 
         winLossService.evaluate(gameState);
-        if (actionType == ActionType.TRAVEL && gameState.getStatus() == GameStatus.IN_PROGRESS ) {
+
+        PendingEvent pendingEvent = null;
+        if (gameState.getStatus() == GameStatus.IN_PROGRESS && actionResult.travelOccurred()) {
             pendingEvent = eventService.triggerArrivalEvent(gameState);
         }
 
-        return new TurnResult(gameState, actionResult, pendingEvent);
+        gameState.setDay(gameState.getDay() + 1);
+
+        String lossReason = gameState.getStatus() == GameStatus.LOST
+                ? winLossService.getLossReason(gameState)
+                : null;
+
+        return new TurnResult(gameState, actionResult, pendingEvent, lossReason);
     }
 
 //    private void applyPassiveCosts(GameState gameState) {

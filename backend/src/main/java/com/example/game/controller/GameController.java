@@ -4,7 +4,6 @@ import com.example.game.dto.request.PerformActionRequest;
 import com.example.game.dto.request.ResolveEventRequest;
 import com.example.game.dto.response.GameStateResponse;
 import com.example.game.dto.response.TurnResultResponse;
-import com.example.game.entity.GameState;
 import com.example.game.exceptions.ErrorResponse;
 import com.example.game.service.GameService;
 import io.swagger.v3.oas.annotations.Parameter;

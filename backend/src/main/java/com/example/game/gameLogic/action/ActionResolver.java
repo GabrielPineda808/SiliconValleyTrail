@@ -1,6 +1,5 @@
 package com.example.game.gameLogic.action;
 
-import com.example.game.enums.ActionType;
 import com.example.game.exceptions.InvalidActionException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

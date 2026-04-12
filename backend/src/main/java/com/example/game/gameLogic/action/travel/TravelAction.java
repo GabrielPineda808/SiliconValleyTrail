@@ -3,12 +3,11 @@ package com.example.game.gameLogic.action.travel;
 import com.example.game.gameLogic.action.ActionResult;
 import com.example.game.gameLogic.action.PlayerAction;
 import com.example.game.entity.GameState;
-import com.example.game.enums.ActionType;
+import com.example.game.gameLogic.action.ActionType;
 import com.example.game.exceptions.InvalidActionException;
 import com.example.game.gameLogic.location.GameLocation;
 import com.example.game.gameLogic.location.LocationRegistry;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
