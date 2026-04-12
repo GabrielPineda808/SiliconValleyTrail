@@ -1,5 +1,6 @@
 package com.example.game.service;
 
+import com.example.game.dto.response.GameStateResponse;
 import com.example.game.dto.response.TurnResultResponse;
 import com.example.game.entity.GameState;
 import com.example.game.entity.User;
@@ -37,7 +38,7 @@ public class GameService {
     private final EventService eventService;
     private final WinLossService winLossService;
 
-    public GameState createGame(String username) {
+    public GameStateResponse createGame(String username) {
         User user = userRepo.findByUsername(username).orElseThrow(()-> new UserNotFoundException("User not found"));
         GameState gameState;
         if (gameStateRepo.existsByUserId(user.getId())) {
@@ -47,16 +48,18 @@ public class GameService {
             }
         }
         gameState = buildNewGame(user);
-        return gameStateRepo.save(gameState);
+        gameStateRepo.save(gameState);
+        return GameStateResponse.from(gameState);
+
     }
     @Transactional(readOnly = true)
-    public GameState getGame(String username) {
+    public GameStateResponse getGame(String username) {
         User user = userRepo.findByUsername(username).orElseThrow(()-> new UserNotFoundException("User not found"));
 
         GameState gameState = gameStateRepo.findStateByUserAndStatus(user, GameStatus.IN_PROGRESS)
                 .orElseThrow(() -> new GameNotFoundException("No saved game found"));
 
-        return gameState;
+        return GameStateResponse.from(gameState);
     }
 
     public GameState createOrOverrideGame(String username) {

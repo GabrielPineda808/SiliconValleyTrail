@@ -21,49 +21,51 @@ import lombok.*;
 public class GameState extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Column(nullable = false)
-    private Integer gas;
+    private int gas;
 
     @Column(nullable = false)
-    private Integer cash;
+    private int cash;
 
     @Column(nullable = false)
-    private Integer bugs;
+    private int bugs;
 
     @Column(nullable = false)
-    private Integer coffee;
+    private int coffee;
 
     @Column(nullable = false)
-    private Integer motivation;
+    private int motivation;
 
     @Column(name = "location_index", nullable = false)
-    private Integer locationIndex;
+    private int locationIndex;
 
     @Column(name = "location_name", nullable = false)
     private String locationName;
 
     @Column(nullable = false)
-    private Integer day;
+    private int day;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private GameStatus status;
 
     @Column(name = "coffee_zero_streak", nullable = false)
-    private Integer coffeeZeroStreak;
+    private int coffeeZeroStreak;
 
     @Column(name = "state_json", columnDefinition = "TEXT")
     private String stateJson;
 
     @Column
     private EventType pendingEventType;
-    @Column(columnDefinition = "TEXT")
+
+    @Lob
+    @Column
     private String pendingEventJson;
 
     @Column(nullable = false)

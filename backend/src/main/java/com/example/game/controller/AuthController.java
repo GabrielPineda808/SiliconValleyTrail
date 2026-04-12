@@ -56,11 +56,8 @@ public class AuthController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginUserRequest loginUserDto) {
-        User user = authService.authenticate(loginUserDto);
-        String jwtToken = jwtService.generateToken(user);
-        LoginResponse loginResponse = new LoginResponse(jwtToken, jwtService.getExpirationTime());
-        return ResponseEntity.ok(loginResponse);
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginUserRequest request) {
+        return ResponseEntity.ok(authService.authenticate(request));
     }
 
     /**
@@ -84,7 +81,6 @@ public class AuthController {
             )
     })
     public ResponseEntity<RegisterUserResponse> register(@Valid @RequestBody RegisterUserRequest registerUserDto){
-        User user = authService.signup(registerUserDto);
-        return ResponseEntity.ok(new RegisterUserResponse(user.getId(), user.getUsername()));
+        return ResponseEntity.ok(authService.signup(registerUserDto));
     }
 }

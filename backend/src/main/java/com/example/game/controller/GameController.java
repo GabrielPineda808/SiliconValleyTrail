@@ -49,9 +49,7 @@ public class GameController {
             @Parameter(hidden = true)
             @AuthenticationPrincipal(expression = "username") String username
     ) {
-        GameState gameState = gameService.createGame(username);
-        GameStateResponse gameStateResponse = GameStateResponse.from(gameState);
-        return ResponseEntity.ok(gameStateResponse);
+        return ResponseEntity.ok(gameService.createGame(username));
     }
 
     /**
@@ -70,9 +68,7 @@ public class GameController {
             @Parameter(hidden = true)
             @AuthenticationPrincipal(expression = "username") String username
     ) {
-        GameState gameState = gameService.getGame(username);
-        GameStateResponse gameStateResponse = GameStateResponse.from(gameState);
-        return ResponseEntity.ok(gameStateResponse);
+        return ResponseEntity.ok(gameService.getGame(username));
     }
 
     /**
@@ -94,8 +90,7 @@ public class GameController {
             @Parameter(hidden = true)
             @AuthenticationPrincipal(expression = "username") String username
     ) {
-        TurnResultResponse returnResponse = gameService.performAction(username, action.action());
-        return ResponseEntity.ok(returnResponse);
+        return ResponseEntity.ok(gameService.performAction(username, action.action()));
     }
 
     /**

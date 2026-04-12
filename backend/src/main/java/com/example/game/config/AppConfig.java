@@ -1,5 +1,6 @@
 package com.example.game.config;
 
+import com.example.game.exceptions.UserNotFoundException;
 import com.example.game.repository.UserRepo;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -20,7 +21,7 @@ public class AppConfig {
     @Bean
     UserDetailsService userDetailsService(){
         return username -> userRepo.findByUsername(username)
-                .orElseThrow(()-> new RuntimeException("Username Not Found"));
+                .orElseThrow(()-> new UserNotFoundException("Username Not Found"));
     }
     @Bean
     BCryptPasswordEncoder passwordEncoder() {return new BCryptPasswordEncoder();}

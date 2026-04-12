@@ -11,7 +11,6 @@ public record RegisterUserResponse(
         @Schema(description = "Unique identifier of the created user.", example = "22")
         Long id,
 
-        @JsonProperty("Username")
         @Schema(description = "Username assigned to the new account.", example = "gabe")
         String username
 ) {

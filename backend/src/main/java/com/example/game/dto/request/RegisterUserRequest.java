@@ -3,6 +3,7 @@ package com.example.game.dto.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.GroupSequence;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -18,10 +19,12 @@ public record RegisterUserRequest(
         @Schema(description = "Unique username for the new account.", example = "gabe")
         @NotBlank(message = "Username is required", groups = RequiredChecks.class)
         @Size(min = 3, max = 15, message = "Username must be between 3 and 15 characters", groups = FormatChecks.class)
+        @NotNull
         String username,
 
         @Schema(description = "Plain text password for the new account.", example = "password123")
         @NotBlank(message = "Password is required", groups = RequiredChecks.class)
+        @NotNull
         @Size(min = 8, max = 128, message = "Password must be between 8 and 128 characters", groups = FormatChecks.class)
         String password
 ) {

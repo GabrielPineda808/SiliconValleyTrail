@@ -95,12 +95,7 @@ public class GlobalExceptionHandler {
             MethodArgumentNotValidException ex, HttpServletRequest request
     ) {
         log.warn("Validation failed: {}", ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse(
-                "VALIDATION_FAILED",
-                "Request validation failed",
-                HttpStatus.BAD_REQUEST.value(),
-                request.getRequestURI()
-        );
+
         List<ErrorResponse.FieldError> fieldErrors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
@@ -110,7 +105,15 @@ public class GlobalExceptionHandler {
                         fieldError.getDefaultMessage()
                 ))
                 .toList();
-        errorResponse.setFieldErrors(fieldErrors);
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                "VALIDATION_FAILED",
+                "Request validation failed",
+                HttpStatus.BAD_REQUEST.value(),
+                request.getRequestURI(),
+                fieldErrors
+        );
+
         return ResponseEntity.badRequest().body(errorResponse);
     }
 

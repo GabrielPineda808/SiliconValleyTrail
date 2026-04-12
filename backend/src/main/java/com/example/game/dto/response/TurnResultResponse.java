@@ -10,15 +10,15 @@ import com.example.game.gameLogic.event.records.PendingEvent;
 import java.util.List;
 
 public record TurnResultResponse(
-        Long gameId,
-        Integer gas,
-        Integer cash,
-        Integer bugs,
-        Integer coffee,
-        Integer motivation,
-        Integer locationIndex,
+        long gameId,
+        int gas,
+        int cash,
+        int bugs,
+        int coffee,
+        int motivation,
+        int locationIndex,
         String locationName,
-        Integer day,
+        int day,
         GameStatus status,
         String message,
         List<String> effects,
@@ -43,25 +43,11 @@ public record TurnResultResponse(
                 gameState.getStatus(),
                 actionResult.message(),
                 actionResult.effects(),
-                toPendingEventResponse(pendingEvent)
-
+                PendingEventResponse.from(pendingEvent)
         );
     }
 
-    private static PendingEventResponse toPendingEventResponse(PendingEvent pendingEvent) {
-        if (pendingEvent == null) {
-            return null;
-        }
 
-        return new PendingEventResponse(
-                pendingEvent.type(),
-                pendingEvent.title(),
-                pendingEvent.description(),
-                pendingEvent.choices().stream()
-                        .map(choice -> new EventChoice(choice.label(), choice.optionType()))
-                        .toList()
-        );
-    }
 
     public static TurnResultResponse fromResolvedEvent(
             GameState gameState,

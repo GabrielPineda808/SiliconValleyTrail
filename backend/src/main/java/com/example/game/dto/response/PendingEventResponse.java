@@ -3,6 +3,7 @@ package com.example.game.dto.response;
 import com.example.game.enums.EventType;
 import com.example.game.gameLogic.event.records.EventChoice;
 import com.example.game.gameLogic.event.records.EventOptionType;
+import com.example.game.gameLogic.event.records.PendingEvent;
 
 import java.util.List;
 
@@ -12,4 +13,16 @@ public record PendingEventResponse(
         String description,
         List<EventChoice> choices
 ) {
+    public static PendingEventResponse from(PendingEvent pendingEvent) {
+        if (pendingEvent == null) return null;
+
+        return new PendingEventResponse(
+                pendingEvent.type(),
+                pendingEvent.title(),
+                pendingEvent.description(),
+                pendingEvent.choices().stream()
+                        .map(EventChoice::from)
+                        .toList()
+        );
+    }
 }
