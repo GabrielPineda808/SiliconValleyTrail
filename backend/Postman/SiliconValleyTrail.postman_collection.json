@@ -1,1429 +1,1333 @@
-﻿{
-    "info":  {
-                 "_postman_id":  "ef3aba9d-652f-41ab-9bf9-f0769f5f9a49",
-                 "name":  "Silicon Valley Trail - Comprehensive API Scenarios",
-                 "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-                 "_exporter_id":  "OpenAI"
-             },
-    "variable":  [
-                     {
-                         "key":  "baseUrl",
-                         "value":  "http://localhost:8080"
-                     },
-                     {
-                         "key":  "jwt",
-                         "value":  ""
-                     },
-                     {
-                         "key":  "username",
-                         "value":  "testUser"
-                     },
-                     {
-                         "key":  "password",
-                         "value":  "Test123!"
-                     },
-                     {
-                         "key":  "secondUsername",
-                         "value":  "user_no_game"
-                     },
-                     {
-                         "key":  "secondPassword",
-                         "value":  "Test123!"
-                     },
-                     {
-                         "key":  "eventChoiceCode",
-                         "value":  "ACCEPT"
-                     },
-                     {
-                         "key":  "badToken",
-                         "value":  "invalid.jwt.token"
-                     },
-                     {
-                         "key":  "lastEventType",
-                         "value":  ""
-                     },
-                     {
-                         "key":  "lastActionMessage",
-                         "value":  ""
-                     }
-                 ],
-    "auth":  {
-                 "type":  "bearer",
-                 "bearer":  [
+{
+    "info": {
+        "_postman_id": "ef3aba9d-652f-41ab-9bf9-f0769f5f9a49",
+        "name": "Silicon Valley Trail - Comprehensive API Scenarios",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "_exporter_id": "OpenAI"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8080"
+        },
+        {
+            "key": "jwt",
+            "value": ""
+        },
+        {
+            "key": "username",
+            "value": "testUser"
+        },
+        {
+            "key": "password",
+            "value": "Test123!"
+        },
+        {
+            "key": "secondUsername",
+            "value": "user_no_game"
+        },
+        {
+            "key": "secondPassword",
+            "value": "Test123!"
+        },
+        {
+            "key": "eventChoice",
+            "value": "ACCEPT"
+        },
+        {
+            "key": "badToken",
+            "value": "invalid.jwt.token"
+        },
+        {
+            "key": "lastEventType",
+            "value": ""
+        },
+        {
+            "key": "lastActionMessage",
+            "value": ""
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{jwt}}",
+                "type": "string"
+            }
+        ]
+    },
+    "item": [
+        {
+            "name": "00 - Setup and Authentication",
+            "item": [
+                {
+                    "name": "Signup primary user",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/auth/signup",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "description": "Creates the main test account. If it already exists, expect a handled error response."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Login primary user (save JWT)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/auth/login",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "description": "Logs in the primary user and stores the JWT into {{jwt}}."
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "let data = {};",
+                                    "try { data = pm.response.json(); } catch (e) {}",
+                                    "const token = data.token || data.jwt || data.jwtToken || data.accessToken;",
+                                    "if (token) pm.collectionVariables.set(\"jwt\", token);",
+                                    "pm.test(\"Login succeeded\", function () {",
+                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Signup secondary user",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/auth/signup",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"username\": \"{{secondUsername}}\",\n  \"password\": \"{{secondPassword}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "description": "Secondary account for no-save and alternate-user scenarios."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Login secondary user (manual alt flow)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/auth/login",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"username\": \"{{secondUsername}}\",\n  \"password\": \"{{secondPassword}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "description": "Optional. This overwrites {{jwt}} with the secondary user token."
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "let data = {};",
+                                    "try { data = pm.response.json(); } catch (e) {}",
+                                    "const token = data.token || data.jwt || data.jwtToken || data.accessToken;",
+                                    "if (token) pm.collectionVariables.set(\"jwt\", token);",
+                                    "pm.test(\"Login succeeded\", function () {",
+                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "01 - Happy Path / Core Gameplay",
+            "item": [
+                {
+                    "name": "Start new game",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": "{{baseUrl}}/game/start",
+                        "description": "Starts a new game for the current user."
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "let data = {};",
+                                    "try { data = pm.response.json(); } catch (e) {}",
+                                    "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
+                                    "if (data.pendingEvent && data.pendingEvent.type) {",
+                                    "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
+                                    "  const choices = data.pendingEvent.choices || [];",
+                                    "  if (choices.length > 0 && choices[0].optionType) {",
+                                    "    pm.collectionVariables.set(\"eventChoice\", choices[0].optionType);",
+                                    "  }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Find / load current game",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/game/findGame",
+                        "description": "Loads the active save and re-surfaces a pending event if one exists."
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "let data = {};",
+                                    "try { data = pm.response.json(); } catch (e) {}",
+                                    "if (data.pendingEvent && data.pendingEvent.type) {",
+                                    "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
+                                    "  const choices = data.pendingEvent.choices || [];",
+                                    "  if (choices.length > 0 && choices[0].optionType) {",
+                                    "    pm.collectionVariables.set(\"eventChoice\", choices[0].optionType);",
+                                    "  }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Perform actions",
+                    "item": [
+                        {
+                            "name": "Travel",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": "{{baseUrl}}/game/action",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"action\": \"TRAVEL\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "response": [],
+                            "event": [
                                 {
-                                    "key":  "token",
-                                    "value":  "{{jwt}}",
-                                    "type":  "string"
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "let data = {};",
+                                            "try { data = pm.response.json(); } catch (e) {}",
+                                            "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
+                                            "if (data.pendingEvent && data.pendingEvent.type) {",
+                                            "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
+                                            "  const choices = data.pendingEvent.choices || [];",
+                                            "  if (choices.length > 0 && choices[0].optionType) {",
+                                            "    pm.collectionVariables.set(\"eventChoice\", choices[0].optionType);",
+                                            "  }",
+                                            "}"
+                                        ]
+                                    }
                                 }
                             ]
-             },
-    "item":  [
-                 {
-                     "name":  "00 - Setup and Authentication",
-                     "item":  [
-                                  {
-                                      "name":  "Signup primary user",
-                                      "request":  {
-                                                      "method":  "POST",
-                                                      "header":  [
-                                                                     {
-                                                                         "key":  "Content-Type",
-                                                                         "value":  "application/json"
-                                                                     }
-                                                                 ],
-                                                      "url":  "{{baseUrl}}/auth/signup",
-                                                      "body":  {
-                                                                   "mode":  "raw",
-                                                                   "raw":  "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
-                                                                   "options":  {
-                                                                                   "raw":  {
-                                                                                               "language":  "json"
-                                                                                           }
-                                                                               }
-                                                               },
-                                                      "auth":  {
-                                                                   "type":  "noauth"
-                                                               },
-                                                      "description":  "Creates the main test account. If it already exists, expect a handled error response."
-                                                  },
-                                      "response":  [
-
-                                                   ]
-                                  },
-                                  {
-                                      "name":  "Login primary user (save JWT)",
-                                      "request":  {
-                                                      "method":  "POST",
-                                                      "header":  [
-                                                                     {
-                                                                         "key":  "Content-Type",
-                                                                         "value":  "application/json"
-                                                                     }
-                                                                 ],
-                                                      "url":  "{{baseUrl}}/auth/login",
-                                                      "body":  {
-                                                                   "mode":  "raw",
-                                                                   "raw":  "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
-                                                                   "options":  {
-                                                                                   "raw":  {
-                                                                                               "language":  "json"
-                                                                                           }
-                                                                               }
-                                                               },
-                                                      "auth":  {
-                                                                   "type":  "noauth"
-                                                               },
-                                                      "description":  "Logs in the primary user and stores the JWT into {{jwt}}."
-                                                  },
-                                      "response":  [
-
-                                                   ],
-                                      "event":  [
-                                                    {
-                                                        "listen":  "test",
-                                                        "script":  {
-                                                                       "type":  "text/javascript",
-                                                                       "exec":  [
-                                                                                    "let data = {};",
-                                                                                    "try { data = pm.response.json(); } catch (e) {}",
-                                                                                    "const token = data.token || data.jwt || data.jwtToken || data.accessToken;",
-                                                                                    "if (token) pm.collectionVariables.set(\"jwt\", token);",
-                                                                                    "pm.test(\"Login succeeded\", function () {",
-                                                                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
-                                                                                    "});"
-                                                                                ]
-                                                                   }
-                                                    }
-                                                ]
-                                  },
-                                  {
-                                      "name":  "Signup secondary user",
-                                      "request":  {
-                                                      "method":  "POST",
-                                                      "header":  [
-                                                                     {
-                                                                         "key":  "Content-Type",
-                                                                         "value":  "application/json"
-                                                                     }
-                                                                 ],
-                                                      "url":  "{{baseUrl}}/auth/signup",
-                                                      "body":  {
-                                                                   "mode":  "raw",
-                                                                   "raw":  "{\n  \"username\": \"{{secondUsername}}\",\n  \"password\": \"{{secondPassword}}\"\n}",
-                                                                   "options":  {
-                                                                                   "raw":  {
-                                                                                               "language":  "json"
-                                                                                           }
-                                                                               }
-                                                               },
-                                                      "auth":  {
-                                                                   "type":  "noauth"
-                                                               },
-                                                      "description":  "Secondary account for no-save and alternate-user scenarios."
-                                                  },
-                                      "response":  [
-
-                                                   ]
-                                  },
-                                  {
-                                      "name":  "Login secondary user (manual alt flow)",
-                                      "request":  {
-                                                      "method":  "POST",
-                                                      "header":  [
-                                                                     {
-                                                                         "key":  "Content-Type",
-                                                                         "value":  "application/json"
-                                                                     }
-                                                                 ],
-                                                      "url":  "{{baseUrl}}/auth/login",
-                                                      "body":  {
-                                                                   "mode":  "raw",
-                                                                   "raw":  "{\n  \"username\": \"{{secondUsername}}\",\n  \"password\": \"{{secondPassword}}\"\n}",
-                                                                   "options":  {
-                                                                                   "raw":  {
-                                                                                               "language":  "json"
-                                                                                           }
-                                                                               }
-                                                               },
-                                                      "auth":  {
-                                                                   "type":  "noauth"
-                                                               },
-                                                      "description":  "Optional. This overwrites {{jwt}} with the secondary user token."
-                                                  },
-                                      "response":  [
-
-                                                   ],
-                                      "event":  [
-                                                    {
-                                                        "listen":  "test",
-                                                        "script":  {
-                                                                       "type":  "text/javascript",
-                                                                       "exec":  [
-                                                                                    "let data = {};",
-                                                                                    "try { data = pm.response.json(); } catch (e) {}",
-                                                                                    "const token = data.token || data.jwt || data.jwtToken || data.accessToken;",
-                                                                                    "if (token) pm.collectionVariables.set(\"jwt\", token);",
-                                                                                    "pm.test(\"Login succeeded\", function () {",
-                                                                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
-                                                                                    "});"
-                                                                                ]
-                                                                   }
-                                                    }
-                                                ]
-                                  }
-                              ]
-                 },
-                 {
-                     "name":  "01 - Happy Path / Core Gameplay",
-                     "item":  [
-                                  {
-                                      "name":  "Start new game",
-                                      "request":  {
-                                                      "method":  "POST",
-                                                      "header":  [
-
-                                                                 ],
-                                                      "url":  "{{baseUrl}}/game/start",
-                                                      "description":  "Starts a new game for the current user."
-                                                  },
-                                      "response":  [
-
-                                                   ],
-                                      "event":  [
-                                                    {
-                                                        "listen":  "test",
-                                                        "script":  {
-                                                                       "type":  "text/javascript",
-                                                                       "exec":  [
-                                                                                    "let data = {};",
-                                                                                    "try { data = pm.response.json(); } catch (e) {}",
-                                                                                    "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
-                                                                                    "if (data.pendingEvent \u0026\u0026 data.pendingEvent.type) {",
-                                                                                    "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
-                                                                                    "  const choices = data.pendingEvent.choices || [];",
-                                                                                    "  if (choices.length \u003e 0 \u0026\u0026 choices[0].code) {",
-                                                                                    "    pm.collectionVariables.set(\"eventChoiceCode\", choices[0].code);",
-                                                                                    "  }",
-                                                                                    "}"
-                                                                                ]
-                                                                   }
-                                                    }
-                                                ]
-                                  },
-                                  {
-                                      "name":  "Find / load current game",
-                                      "request":  {
-                                                      "method":  "GET",
-                                                      "header":  [
-
-                                                                 ],
-                                                      "url":  "{{baseUrl}}/game/findGame",
-                                                      "description":  "Loads the active save and re-surfaces a pending event if one exists."
-                                                  },
-                                      "response":  [
-
-                                                   ],
-                                      "event":  [
-                                                    {
-                                                        "listen":  "test",
-                                                        "script":  {
-                                                                       "type":  "text/javascript",
-                                                                       "exec":  [
-                                                                                    "let data = {};",
-                                                                                    "try { data = pm.response.json(); } catch (e) {}",
-                                                                                    "if (data.pendingEvent \u0026\u0026 data.pendingEvent.type) {",
-                                                                                    "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
-                                                                                    "  const choices = data.pendingEvent.choices || [];",
-                                                                                    "  if (choices.length \u003e 0 \u0026\u0026 choices[0].code) {",
-                                                                                    "    pm.collectionVariables.set(\"eventChoiceCode\", choices[0].code);",
-                                                                                    "  }",
-                                                                                    "}"
-                                                                                ]
-                                                                   }
-                                                    }
-                                                ]
-                                  },
-                                  {
-                                      "name":  "Perform actions",
-                                      "item":  [
-                                                   {
-                                                       "name":  "Travel",
-                                                       "request":  {
-                                                                       "method":  "POST",
-                                                                       "header":  [
-                                                                                      {
-                                                                                          "key":  "Content-Type",
-                                                                                          "value":  "application/json"
-                                                                                      }
-                                                                                  ],
-                                                                       "url":  "{{baseUrl}}/game/action",
-                                                                       "body":  {
-                                                                                    "mode":  "raw",
-                                                                                    "raw":  "{\n  \"action\": \"TRAVEL\"\n}",
-                                                                                    "options":  {
-                                                                                                    "raw":  {
-                                                                                                                "language":  "json"
-                                                                                                            }
-                                                                                                }
-                                                                                }
-                                                                   },
-                                                       "response":  [
-
-                                                                    ],
-                                                       "event":  [
-                                                                     {
-                                                                         "listen":  "test",
-                                                                         "script":  {
-                                                                                        "type":  "text/javascript",
-                                                                                        "exec":  [
-                                                                                                     "let data = {};",
-                                                                                                     "try { data = pm.response.json(); } catch (e) {}",
-                                                                                                     "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
-                                                                                                     "if (data.pendingEvent \u0026\u0026 data.pendingEvent.type) {",
-                                                                                                     "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
-                                                                                                     "  const choices = data.pendingEvent.choices || [];",
-                                                                                                     "  if (choices.length \u003e 0 \u0026\u0026 choices[0].code) {",
-                                                                                                     "    pm.collectionVariables.set(\"eventChoiceCode\", choices[0].code);",
-                                                                                                     "  }",
-                                                                                                     "}"
-                                                                                                 ]
-                                                                                    }
-                                                                     }
-                                                                 ]
-                                                   },
-                                                   {
-                                                       "name":  "Freelance",
-                                                       "request":  {
-                                                                       "method":  "POST",
-                                                                       "header":  [
-                                                                                      {
-                                                                                          "key":  "Content-Type",
-                                                                                          "value":  "application/json"
-                                                                                      }
-                                                                                  ],
-                                                                       "url":  "{{baseUrl}}/game/action",
-                                                                       "body":  {
-                                                                                    "mode":  "raw",
-                                                                                    "raw":  "{\n  \"action\": \"FREELANCE\"\n}",
-                                                                                    "options":  {
-                                                                                                    "raw":  {
-                                                                                                                "language":  "json"
-                                                                                                            }
-                                                                                                }
-                                                                                }
-                                                                   },
-                                                       "response":  [
-
-                                                                    ],
-                                                       "event":  [
-                                                                     {
-                                                                         "listen":  "test",
-                                                                         "script":  {
-                                                                                        "type":  "text/javascript",
-                                                                                        "exec":  [
-                                                                                                     "let data = {};",
-                                                                                                     "try { data = pm.response.json(); } catch (e) {}",
-                                                                                                     "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
-                                                                                                     "if (data.pendingEvent \u0026\u0026 data.pendingEvent.type) {",
-                                                                                                     "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
-                                                                                                     "  const choices = data.pendingEvent.choices || [];",
-                                                                                                     "  if (choices.length \u003e 0 \u0026\u0026 choices[0].code) {",
-                                                                                                     "    pm.collectionVariables.set(\"eventChoiceCode\", choices[0].code);",
-                                                                                                     "  }",
-                                                                                                     "}"
-                                                                                                 ]
-                                                                                    }
-                                                                     }
-                                                                 ]
-                                                   },
-                                                   {
-                                                       "name":  "Fix bug",
-                                                       "request":  {
-                                                                       "method":  "POST",
-                                                                       "header":  [
-                                                                                      {
-                                                                                          "key":  "Content-Type",
-                                                                                          "value":  "application/json"
-                                                                                      }
-                                                                                  ],
-                                                                       "url":  "{{baseUrl}}/game/action",
-                                                                       "body":  {
-                                                                                    "mode":  "raw",
-                                                                                    "raw":  "{\n  \"action\": \"FIX_BUGS\"\n}",
-                                                                                    "options":  {
-                                                                                                    "raw":  {
-                                                                                                                "language":  "json"
-                                                                                                            }
-                                                                                                }
-                                                                                }
-                                                                   },
-                                                       "response":  [
-
-                                                                    ],
-                                                       "event":  [
-                                                                     {
-                                                                         "listen":  "test",
-                                                                         "script":  {
-                                                                                        "type":  "text/javascript",
-                                                                                        "exec":  [
-                                                                                                     "let data = {};",
-                                                                                                     "try { data = pm.response.json(); } catch (e) {}",
-                                                                                                     "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
-                                                                                                     "if (data.pendingEvent \u0026\u0026 data.pendingEvent.type) {",
-                                                                                                     "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
-                                                                                                     "  const choices = data.pendingEvent.choices || [];",
-                                                                                                     "  if (choices.length \u003e 0 \u0026\u0026 choices[0].code) {",
-                                                                                                     "    pm.collectionVariables.set(\"eventChoiceCode\", choices[0].code);",
-                                                                                                     "  }",
-                                                                                                     "}"
-                                                                                                 ]
-                                                                                    }
-                                                                     }
-                                                                 ]
-                                                   },
-                                                   {
-                                                       "name":  "Rest",
-                                                       "request":  {
-                                                                       "method":  "POST",
-                                                                       "header":  [
-                                                                                      {
-                                                                                          "key":  "Content-Type",
-                                                                                          "value":  "application/json"
-                                                                                      }
-                                                                                  ],
-                                                                       "url":  "{{baseUrl}}/game/action",
-                                                                       "body":  {
-                                                                                    "mode":  "raw",
-                                                                                    "raw":  "{\n  \"action\": \"REST\"\n}",
-                                                                                    "options":  {
-                                                                                                    "raw":  {
-                                                                                                                "language":  "json"
-                                                                                                            }
-                                                                                                }
-                                                                                }
-                                                                   },
-                                                       "response":  [
-
-                                                                    ],
-                                                       "event":  [
-                                                                     {
-                                                                         "listen":  "test",
-                                                                         "script":  {
-                                                                                        "type":  "text/javascript",
-                                                                                        "exec":  [
-                                                                                                     "let data = {};",
-                                                                                                     "try { data = pm.response.json(); } catch (e) {}",
-                                                                                                     "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
-                                                                                                     "if (data.pendingEvent \u0026\u0026 data.pendingEvent.type) {",
-                                                                                                     "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
-                                                                                                     "  const choices = data.pendingEvent.choices || [];",
-                                                                                                     "  if (choices.length \u003e 0 \u0026\u0026 choices[0].code) {",
-                                                                                                     "    pm.collectionVariables.set(\"eventChoiceCode\", choices[0].code);",
-                                                                                                     "  }",
-                                                                                                     "}"
-                                                                                                 ]
-                                                                                    }
-                                                                     }
-                                                                 ]
-                                                   },
-                                                   {
-                                                       "name":  "Buy supplies",
-                                                       "request":  {
-                                                                       "method":  "POST",
-                                                                       "header":  [
-                                                                                      {
-                                                                                          "key":  "Content-Type",
-                                                                                          "value":  "application/json"
-                                                                                      }
-                                                                                  ],
-                                                                       "url":  "{{baseUrl}}/game/action",
-                                                                       "body":  {
-                                                                                    "mode":  "raw",
-                                                                                    "raw":  "{\n  \"action\": \"BUY_SUPPLIES\"\n}",
-                                                                                    "options":  {
-                                                                                                    "raw":  {
-                                                                                                                "language":  "json"
-                                                                                                            }
-                                                                                                }
-                                                                                }
-                                                                   },
-                                                       "response":  [
-
-                                                                    ],
-                                                       "event":  [
-                                                                     {
-                                                                         "listen":  "test",
-                                                                         "script":  {
-                                                                                        "type":  "text/javascript",
-                                                                                        "exec":  [
-                                                                                                     "let data = {};",
-                                                                                                     "try { data = pm.response.json(); } catch (e) {}",
-                                                                                                     "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
-                                                                                                     "if (data.pendingEvent \u0026\u0026 data.pendingEvent.type) {",
-                                                                                                     "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
-                                                                                                     "  const choices = data.pendingEvent.choices || [];",
-                                                                                                     "  if (choices.length \u003e 0 \u0026\u0026 choices[0].code) {",
-                                                                                                     "    pm.collectionVariables.set(\"eventChoiceCode\", choices[0].code);",
-                                                                                                     "  }",
-                                                                                                     "}"
-                                                                                                 ]
-                                                                                    }
-                                                                     }
-                                                                 ]
-                                                   },
-                                                   {
-                                                       "name":  "Pitch VC",
-                                                       "request":  {
-                                                                       "method":  "POST",
-                                                                       "header":  [
-                                                                                      {
-                                                                                          "key":  "Content-Type",
-                                                                                          "value":  "application/json"
-                                                                                      }
-                                                                                  ],
-                                                                       "url":  "{{baseUrl}}/game/action",
-                                                                       "body":  {
-                                                                                    "mode":  "raw",
-                                                                                    "raw":  "{\n  \"action\": \"PITCH_VC\"\n}",
-                                                                                    "options":  {
-                                                                                                    "raw":  {
-                                                                                                                "language":  "json"
-                                                                                                            }
-                                                                                                }
-                                                                                }
-                                                                   },
-                                                       "response":  [
-
-                                                                    ],
-                                                       "event":  [
-                                                                     {
-                                                                         "listen":  "test",
-                                                                         "script":  {
-                                                                                        "type":  "text/javascript",
-                                                                                        "exec":  [
-                                                                                                     "let data = {};",
-                                                                                                     "try { data = pm.response.json(); } catch (e) {}",
-                                                                                                     "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
-                                                                                                     "if (data.pendingEvent \u0026\u0026 data.pendingEvent.type) {",
-                                                                                                     "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
-                                                                                                     "  const choices = data.pendingEvent.choices || [];",
-                                                                                                     "  if (choices.length \u003e 0 \u0026\u0026 choices[0].code) {",
-                                                                                                     "    pm.collectionVariables.set(\"eventChoiceCode\", choices[0].code);",
-                                                                                                     "  }",
-                                                                                                     "}"
-                                                                                                 ]
-                                                                                    }
-                                                                     }
-                                                                 ]
-                                                   }
-                                               ]
-                                  },
-                                  {
-                                      "name":  "Resolve pending event",
-                                      "item":  [
-                                                   {
-                                                       "name":  "Resolve with cached first choice",
-                                                       "request":  {
-                                                                       "method":  "POST",
-                                                                       "header":  [
-                                                                                      {
-                                                                                          "key":  "Content-Type",
-                                                                                          "value":  "application/json"
-                                                                                      }
-                                                                                  ],
-                                                                       "url":  "{{baseUrl}}/game/event/choice",
-                                                                       "body":  {
-                                                                                    "mode":  "raw",
-                                                                                    "raw":  "{\n  \"choiceCode\": \"{{eventChoiceCode}}\"\n}",
-                                                                                    "options":  {
-                                                                                                    "raw":  {
-                                                                                                                "language":  "json"
-                                                                                                            }
-                                                                                                }
-                                                                                }
-                                                                   },
-                                                       "response":  [
-
-                                                                    ],
-                                                       "event":  [
-                                                                     {
-                                                                         "listen":  "test",
-                                                                         "script":  {
-                                                                                        "type":  "text/javascript",
-                                                                                        "exec":  [
-                                                                                                     "let data = {};",
-                                                                                                     "try { data = pm.response.json(); } catch (e) {}",
-                                                                                                     "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
-                                                                                                     "if (data.pendingEvent \u0026\u0026 data.pendingEvent.type) {",
-                                                                                                     "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
-                                                                                                     "  const choices = data.pendingEvent.choices || [];",
-                                                                                                     "  if (choices.length \u003e 0 \u0026\u0026 choices[0].code) {",
-                                                                                                     "    pm.collectionVariables.set(\"eventChoiceCode\", choices[0].code);",
-                                                                                                     "  }",
-                                                                                                     "}"
-                                                                                                 ]
-                                                                                    }
-                                                                     }
-                                                                 ]
-                                                   },
-                                                   {
-                                                       "name":  "Resolve with ACCEPT",
-                                                       "request":  {
-                                                                       "method":  "POST",
-                                                                       "header":  [
-                                                                                      {
-                                                                                          "key":  "Content-Type",
-                                                                                          "value":  "application/json"
-                                                                                      }
-                                                                                  ],
-                                                                       "url":  "{{baseUrl}}/game/event/choice",
-                                                                       "body":  {
-                                                                                    "mode":  "raw",
-                                                                                    "raw":  "{\n  \"choiceCode\": \"ACCEPT\"\n}",
-                                                                                    "options":  {
-                                                                                                    "raw":  {
-                                                                                                                "language":  "json"
-                                                                                                            }
-                                                                                                }
-                                                                                }
-                                                                   },
-                                                       "response":  [
-
-                                                                    ],
-                                                       "event":  [
-                                                                     {
-                                                                         "listen":  "test",
-                                                                         "script":  {
-                                                                                        "type":  "text/javascript",
-                                                                                        "exec":  [
-                                                                                                     "let data = {};",
-                                                                                                     "try { data = pm.response.json(); } catch (e) {}",
-                                                                                                     "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
-                                                                                                     "if (data.pendingEvent \u0026\u0026 data.pendingEvent.type) {",
-                                                                                                     "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
-                                                                                                     "  const choices = data.pendingEvent.choices || [];",
-                                                                                                     "  if (choices.length \u003e 0 \u0026\u0026 choices[0].code) {",
-                                                                                                     "    pm.collectionVariables.set(\"eventChoiceCode\", choices[0].code);",
-                                                                                                     "  }",
-                                                                                                     "}"
-                                                                                                 ]
-                                                                                    }
-                                                                     }
-                                                                 ]
-                                                   },
-                                                   {
-                                                       "name":  "Resolve with DECLINE",
-                                                       "request":  {
-                                                                       "method":  "POST",
-                                                                       "header":  [
-                                                                                      {
-                                                                                          "key":  "Content-Type",
-                                                                                          "value":  "application/json"
-                                                                                      }
-                                                                                  ],
-                                                                       "url":  "{{baseUrl}}/game/event/choice",
-                                                                       "body":  {
-                                                                                    "mode":  "raw",
-                                                                                    "raw":  "{\n  \"choiceCode\": \"DECLINE\"\n}",
-                                                                                    "options":  {
-                                                                                                    "raw":  {
-                                                                                                                "language":  "json"
-                                                                                                            }
-                                                                                                }
-                                                                                }
-                                                                   },
-                                                       "response":  [
-
-                                                                    ],
-                                                       "event":  [
-                                                                     {
-                                                                         "listen":  "test",
-                                                                         "script":  {
-                                                                                        "type":  "text/javascript",
-                                                                                        "exec":  [
-                                                                                                     "let data = {};",
-                                                                                                     "try { data = pm.response.json(); } catch (e) {}",
-                                                                                                     "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
-                                                                                                     "if (data.pendingEvent \u0026\u0026 data.pendingEvent.type) {",
-                                                                                                     "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
-                                                                                                     "  const choices = data.pendingEvent.choices || [];",
-                                                                                                     "  if (choices.length \u003e 0 \u0026\u0026 choices[0].code) {",
-                                                                                                     "    pm.collectionVariables.set(\"eventChoiceCode\", choices[0].code);",
-                                                                                                     "  }",
-                                                                                                     "}"
-                                                                                                 ]
-                                                                                    }
-                                                                     }
-                                                                 ]
-                                                   },
-                                                   {
-                                                       "name":  "Resolve with JOIN",
-                                                       "request":  {
-                                                                       "method":  "POST",
-                                                                       "header":  [
-                                                                                      {
-                                                                                          "key":  "Content-Type",
-                                                                                          "value":  "application/json"
-                                                                                      }
-                                                                                  ],
-                                                                       "url":  "{{baseUrl}}/game/event/choice",
-                                                                       "body":  {
-                                                                                    "mode":  "raw",
-                                                                                    "raw":  "{\n  \"choiceCode\": \"JOIN\"\n}",
-                                                                                    "options":  {
-                                                                                                    "raw":  {
-                                                                                                                "language":  "json"
-                                                                                                            }
-                                                                                                }
-                                                                                }
-                                                                   },
-                                                       "response":  [
-
-                                                                    ],
-                                                       "event":  [
-                                                                     {
-                                                                         "listen":  "test",
-                                                                         "script":  {
-                                                                                        "type":  "text/javascript",
-                                                                                        "exec":  [
-                                                                                                     "let data = {};",
-                                                                                                     "try { data = pm.response.json(); } catch (e) {}",
-                                                                                                     "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
-                                                                                                     "if (data.pendingEvent \u0026\u0026 data.pendingEvent.type) {",
-                                                                                                     "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
-                                                                                                     "  const choices = data.pendingEvent.choices || [];",
-                                                                                                     "  if (choices.length \u003e 0 \u0026\u0026 choices[0].code) {",
-                                                                                                     "    pm.collectionVariables.set(\"eventChoiceCode\", choices[0].code);",
-                                                                                                     "  }",
-                                                                                                     "}"
-                                                                                                 ]
-                                                                                    }
-                                                                     }
-                                                                 ]
-                                                   },
-                                                   {
-                                                       "name":  "Resolve with SKIP",
-                                                       "request":  {
-                                                                       "method":  "POST",
-                                                                       "header":  [
-                                                                                      {
-                                                                                          "key":  "Content-Type",
-                                                                                          "value":  "application/json"
-                                                                                      }
-                                                                                  ],
-                                                                       "url":  "{{baseUrl}}/game/event/choice",
-                                                                       "body":  {
-                                                                                    "mode":  "raw",
-                                                                                    "raw":  "{\n  \"choiceCode\": \"SKIP\"\n}",
-                                                                                    "options":  {
-                                                                                                    "raw":  {
-                                                                                                                "language":  "json"
-                                                                                                            }
-                                                                                                }
-                                                                                }
-                                                                   },
-                                                       "response":  [
-
-                                                                    ],
-                                                       "event":  [
-                                                                     {
-                                                                         "listen":  "test",
-                                                                         "script":  {
-                                                                                        "type":  "text/javascript",
-                                                                                        "exec":  [
-                                                                                                     "let data = {};",
-                                                                                                     "try { data = pm.response.json(); } catch (e) {}",
-                                                                                                     "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
-                                                                                                     "if (data.pendingEvent \u0026\u0026 data.pendingEvent.type) {",
-                                                                                                     "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
-                                                                                                     "  const choices = data.pendingEvent.choices || [];",
-                                                                                                     "  if (choices.length \u003e 0 \u0026\u0026 choices[0].code) {",
-                                                                                                     "    pm.collectionVariables.set(\"eventChoiceCode\", choices[0].code);",
-                                                                                                     "  }",
-                                                                                                     "}"
-                                                                                                 ]
-                                                                                    }
-                                                                     }
-                                                                 ]
-                                                   },
-                                                   {
-                                                       "name":  "Resolve with WAIT",
-                                                       "request":  {
-                                                                       "method":  "POST",
-                                                                       "header":  [
-                                                                                      {
-                                                                                          "key":  "Content-Type",
-                                                                                          "value":  "application/json"
-                                                                                      }
-                                                                                  ],
-                                                                       "url":  "{{baseUrl}}/game/event/choice",
-                                                                       "body":  {
-                                                                                    "mode":  "raw",
-                                                                                    "raw":  "{\n  \"choiceCode\": \"WAIT\"\n}",
-                                                                                    "options":  {
-                                                                                                    "raw":  {
-                                                                                                                "language":  "json"
-                                                                                                            }
-                                                                                                }
-                                                                                }
-                                                                   },
-                                                       "response":  [
-
-                                                                    ],
-                                                       "event":  [
-                                                                     {
-                                                                         "listen":  "test",
-                                                                         "script":  {
-                                                                                        "type":  "text/javascript",
-                                                                                        "exec":  [
-                                                                                                     "let data = {};",
-                                                                                                     "try { data = pm.response.json(); } catch (e) {}",
-                                                                                                     "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
-                                                                                                     "if (data.pendingEvent \u0026\u0026 data.pendingEvent.type) {",
-                                                                                                     "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
-                                                                                                     "  const choices = data.pendingEvent.choices || [];",
-                                                                                                     "  if (choices.length \u003e 0 \u0026\u0026 choices[0].code) {",
-                                                                                                     "    pm.collectionVariables.set(\"eventChoiceCode\", choices[0].code);",
-                                                                                                     "  }",
-                                                                                                     "}"
-                                                                                                 ]
-                                                                                    }
-                                                                     }
-                                                                 ]
-                                                   },
-                                                   {
-                                                       "name":  "Resolve with PUSH_THROUGH",
-                                                       "request":  {
-                                                                       "method":  "POST",
-                                                                       "header":  [
-                                                                                      {
-                                                                                          "key":  "Content-Type",
-                                                                                          "value":  "application/json"
-                                                                                      }
-                                                                                  ],
-                                                                       "url":  "{{baseUrl}}/game/event/choice",
-                                                                       "body":  {
-                                                                                    "mode":  "raw",
-                                                                                    "raw":  "{\n  \"choiceCode\": \"PUSH_THROUGH\"\n}",
-                                                                                    "options":  {
-                                                                                                    "raw":  {
-                                                                                                                "language":  "json"
-                                                                                                            }
-                                                                                                }
-                                                                                }
-                                                                   },
-                                                       "response":  [
-
-                                                                    ],
-                                                       "event":  [
-                                                                     {
-                                                                         "listen":  "test",
-                                                                         "script":  {
-                                                                                        "type":  "text/javascript",
-                                                                                        "exec":  [
-                                                                                                     "let data = {};",
-                                                                                                     "try { data = pm.response.json(); } catch (e) {}",
-                                                                                                     "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
-                                                                                                     "if (data.pendingEvent \u0026\u0026 data.pendingEvent.type) {",
-                                                                                                     "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
-                                                                                                     "  const choices = data.pendingEvent.choices || [];",
-                                                                                                     "  if (choices.length \u003e 0 \u0026\u0026 choices[0].code) {",
-                                                                                                     "    pm.collectionVariables.set(\"eventChoiceCode\", choices[0].code);",
-                                                                                                     "  }",
-                                                                                                     "}"
-                                                                                                 ]
-                                                                                    }
-                                                                     }
-                                                                 ]
-                                                   },
-                                                   {
-                                                       "name":  "Resolve with FIX_NOW",
-                                                       "request":  {
-                                                                       "method":  "POST",
-                                                                       "header":  [
-                                                                                      {
-                                                                                          "key":  "Content-Type",
-                                                                                          "value":  "application/json"
-                                                                                      }
-                                                                                  ],
-                                                                       "url":  "{{baseUrl}}/game/event/choice",
-                                                                       "body":  {
-                                                                                    "mode":  "raw",
-                                                                                    "raw":  "{\n  \"choiceCode\": \"FIX_NOW\"\n}",
-                                                                                    "options":  {
-                                                                                                    "raw":  {
-                                                                                                                "language":  "json"
-                                                                                                            }
-                                                                                                }
-                                                                                }
-                                                                   },
-                                                       "response":  [
-
-                                                                    ],
-                                                       "event":  [
-                                                                     {
-                                                                         "listen":  "test",
-                                                                         "script":  {
-                                                                                        "type":  "text/javascript",
-                                                                                        "exec":  [
-                                                                                                     "let data = {};",
-                                                                                                     "try { data = pm.response.json(); } catch (e) {}",
-                                                                                                     "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
-                                                                                                     "if (data.pendingEvent \u0026\u0026 data.pendingEvent.type) {",
-                                                                                                     "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
-                                                                                                     "  const choices = data.pendingEvent.choices || [];",
-                                                                                                     "  if (choices.length \u003e 0 \u0026\u0026 choices[0].code) {",
-                                                                                                     "    pm.collectionVariables.set(\"eventChoiceCode\", choices[0].code);",
-                                                                                                     "  }",
-                                                                                                     "}"
-                                                                                                 ]
-                                                                                    }
-                                                                     }
-                                                                 ]
-                                                   },
-                                                   {
-                                                       "name":  "Resolve with IGNORE",
-                                                       "request":  {
-                                                                       "method":  "POST",
-                                                                       "header":  [
-                                                                                      {
-                                                                                          "key":  "Content-Type",
-                                                                                          "value":  "application/json"
-                                                                                      }
-                                                                                  ],
-                                                                       "url":  "{{baseUrl}}/game/event/choice",
-                                                                       "body":  {
-                                                                                    "mode":  "raw",
-                                                                                    "raw":  "{\n  \"choiceCode\": \"IGNORE\"\n}",
-                                                                                    "options":  {
-                                                                                                    "raw":  {
-                                                                                                                "language":  "json"
-                                                                                                            }
-                                                                                                }
-                                                                                }
-                                                                   },
-                                                       "response":  [
-
-                                                                    ],
-                                                       "event":  [
-                                                                     {
-                                                                         "listen":  "test",
-                                                                         "script":  {
-                                                                                        "type":  "text/javascript",
-                                                                                        "exec":  [
-                                                                                                     "let data = {};",
-                                                                                                     "try { data = pm.response.json(); } catch (e) {}",
-                                                                                                     "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
-                                                                                                     "if (data.pendingEvent \u0026\u0026 data.pendingEvent.type) {",
-                                                                                                     "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
-                                                                                                     "  const choices = data.pendingEvent.choices || [];",
-                                                                                                     "  if (choices.length \u003e 0 \u0026\u0026 choices[0].code) {",
-                                                                                                     "    pm.collectionVariables.set(\"eventChoiceCode\", choices[0].code);",
-                                                                                                     "  }",
-                                                                                                     "}"
-                                                                                                 ]
-                                                                                    }
-                                                                     }
-                                                                 ]
-                                                   }
-                                               ]
-                                  }
-                              ]
-                 },
-                 {
-                     "name":  "02 - Game State Scenarios",
-                     "item":  [
-                                  {
-                                      "name":  "Start game when one may already be in progress",
-                                      "request":  {
-                                                      "method":  "POST",
-                                                      "header":  [
-
-                                                                 ],
-                                                      "url":  "{{baseUrl}}/game/start",
-                                                      "description":  "Expected to return a handled error if the current user already has an IN_PROGRESS game."
-                                                  },
-                                      "response":  [
-
-                                                   ]
-                                  },
-                                  {
-                                      "name":  "Find game when a save exists",
-                                      "request":  {
-                                                      "method":  "GET",
-                                                      "header":  [
-
-                                                                 ],
-                                                      "url":  "{{baseUrl}}/game/findGame"
-                                                  },
-                                      "response":  [
-
-                                                   ],
-                                      "event":  [
-                                                    {
-                                                        "listen":  "test",
-                                                        "script":  {
-                                                                       "type":  "text/javascript",
-                                                                       "exec":  [
-                                                                                    "let data = {};",
-                                                                                    "try { data = pm.response.json(); } catch (e) {}",
-                                                                                    "if (data.pendingEvent \u0026\u0026 data.pendingEvent.type) {",
-                                                                                    "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
-                                                                                    "  const choices = data.pendingEvent.choices || [];",
-                                                                                    "  if (choices.length \u003e 0 \u0026\u0026 choices[0].code) {",
-                                                                                    "    pm.collectionVariables.set(\"eventChoiceCode\", choices[0].code);",
-                                                                                    "  }",
-                                                                                    "}"
-                                                                                ]
-                                                                   }
-                                                    }
-                                                ]
-                                  },
-                                  {
-                                      "name":  "Delete game",
-                                      "request":  {
-                                                      "method":  "DELETE",
-                                                      "header":  [
-
-                                                                 ],
-                                                      "url":  "{{baseUrl}}/game/delete",
-                                                      "description":  "Deletes the current save if the endpoint is implemented."
-                                                  },
-                                      "response":  [
-
-                                                   ]
-                                  },
-                                  {
-                                      "name":  "Find game after delete / no-save state",
-                                      "request":  {
-                                                      "method":  "GET",
-                                                      "header":  [
-
-                                                                 ],
-                                                      "url":  "{{baseUrl}}/game/findGame"
-                                                  },
-                                      "response":  [
-
-                                                   ]
-                                  }
-                              ]
-                 },
-                 {
-                     "name":  "03 - Validation and Negative Scenarios",
-                     "item":  [
-                                  {
-                                      "name":  "Action while event is pending (should fail)",
-                                      "request":  {
-                                                      "method":  "POST",
-                                                      "header":  [
-                                                                     {
-                                                                         "key":  "Content-Type",
-                                                                         "value":  "application/json"
-                                                                     }
-                                                                 ],
-                                                      "url":  "{{baseUrl}}/game/action",
-                                                      "body":  {
-                                                                   "mode":  "raw",
-                                                                   "raw":  "{\n  \"action\": \"TRAVEL\"\n}",
-                                                                   "options":  {
-                                                                                   "raw":  {
-                                                                                               "language":  "json"
-                                                                                           }
-                                                                               }
-                                                               },
-                                                      "description":  "Use after travel created a pending event. Expected: handled error to resolve the event first."
-                                                  },
-                                      "response":  [
-
-                                                   ]
-                                  },
-                                  {
-                                      "name":  "Resolve event when no event is pending (should fail)",
-                                      "request":  {
-                                                      "method":  "POST",
-                                                      "header":  [
-                                                                     {
-                                                                         "key":  "Content-Type",
-                                                                         "value":  "application/json"
-                                                                     }
-                                                                 ],
-                                                      "url":  "{{baseUrl}}/game/event/choice",
-                                                      "body":  {
-                                                                   "mode":  "raw",
-                                                                   "raw":  "{\n  \"choiceCode\": \"ACCEPT\"\n}",
-                                                                   "options":  {
-                                                                                   "raw":  {
-                                                                                               "language":  "json"
-                                                                                           }
-                                                                               }
-                                                               }
-                                                  },
-                                      "response":  [
-
-                                                   ]
-                                  },
-                                  {
-                                      "name":  "Invalid action enum value",
-                                      "request":  {
-                                                      "method":  "POST",
-                                                      "header":  [
-                                                                     {
-                                                                         "key":  "Content-Type",
-                                                                         "value":  "application/json"
-                                                                     }
-                                                                 ],
-                                                      "url":  "{{baseUrl}}/game/action",
-                                                      "body":  {
-                                                                   "mode":  "raw",
-                                                                   "raw":  "{\n  \"action\": \"INVALID_ACTION\"\n}",
-                                                                   "options":  {
-                                                                                   "raw":  {
-                                                                                               "language":  "json"
-                                                                                           }
-                                                                               }
-                                                               }
-                                                  },
-                                      "response":  [
-
-                                                   ]
-                                  },
-                                  {
-                                      "name":  "Malformed action body (raw enum string)",
-                                      "request":  {
-                                                      "method":  "POST",
-                                                      "header":  [
-                                                                     {
-                                                                         "key":  "Content-Type",
-                                                                         "value":  "application/json"
-                                                                     }
-                                                                 ],
-                                                      "url":  "{{baseUrl}}/game/action",
-                                                      "body":  {
-                                                                   "mode":  "raw",
-                                                                   "raw":  "\"TRAVEL\"",
-                                                                   "options":  {
-                                                                                   "raw":  {
-                                                                                               "language":  "json"
-                                                                                           }
-                                                                               }
-                                                               }
-                                                  },
-                                      "response":  [
-
-                                                   ]
-                                  },
-                                  {
-                                      "name":  "Malformed event choice body",
-                                      "request":  {
-                                                      "method":  "POST",
-                                                      "header":  [
-                                                                     {
-                                                                         "key":  "Content-Type",
-                                                                         "value":  "application/json"
-                                                                     }
-                                                                 ],
-                                                      "url":  "{{baseUrl}}/game/event/choice",
-                                                      "body":  {
-                                                                   "mode":  "raw",
-                                                                   "raw":  "{\n  \"choice\": \"ACCEPT\"\n}",
-                                                                   "options":  {
-                                                                                   "raw":  {
-                                                                                               "language":  "json"
-                                                                                           }
-                                                                               }
-                                                               },
-                                                      "description":  "Wrong field name on purpose to test validation / binding behavior."
-                                                  },
-                                      "response":  [
-
-                                                   ]
-                                  }
-                              ]
-                 },
-                 {
-                     "name":  "04 - Authentication and Authorization Scenarios",
-                     "item":  [
-                                  {
-                                      "name":  "Login with wrong password",
-                                      "request":  {
-                                                      "method":  "POST",
-                                                      "header":  [
-                                                                     {
-                                                                         "key":  "Content-Type",
-                                                                         "value":  "application/json"
-                                                                     }
-                                                                 ],
-                                                      "url":  "{{baseUrl}}/auth/login",
-                                                      "body":  {
-                                                                   "mode":  "raw",
-                                                                   "raw":  "{\n  \"username\": \"{{username}}\",\n  \"password\": \"WrongPassword123!\"\n}",
-                                                                   "options":  {
-                                                                                   "raw":  {
-                                                                                               "language":  "json"
-                                                                                           }
-                                                                               }
-                                                               },
-                                                      "auth":  {
-                                                                   "type":  "noauth"
-                                                               }
-                                                  },
-                                      "response":  [
-
-                                                   ]
-                                  },
-                                  {
-                                      "name":  "Protected endpoint with no token",
-                                      "request":  {
-                                                      "method":  "GET",
-                                                      "header":  [
-
-                                                                 ],
-                                                      "url":  "{{baseUrl}}/game/findGame",
-                                                      "auth":  {
-                                                                   "type":  "noauth"
-                                                               },
-                                                      "description":  "Auth explicitly disabled for this request."
-                                                  },
-                                      "response":  [
-
-                                                   ]
-                                  },
-                                  {
-                                      "name":  "Protected endpoint with bad token",
-                                      "request":  {
-                                                      "method":  "GET",
-                                                      "header":  [
-
-                                                                 ],
-                                                      "url":  "{{baseUrl}}/game/findGame",
-                                                      "description":  "Forces an invalid bearer token for this request."
-                                                  },
-                                      "response":  [
-
-                                                   ],
-                                      "event":  [
-                                                    {
-                                                        "listen":  "prerequest",
-                                                        "script":  {
-                                                                       "type":  "text/javascript",
-                                                                       "exec":  [
-                                                                                    "pm.request.auth = { type: \"bearer\", bearer: [{ key: \"token\", value: pm.collectionVariables.get(\"badToken\"), type: \"string\" }] };"
-                                                                                ]
-                                                                   }
-                                                    }
-                                                ]
-                                  },
-                                  {
-                                      "name":  "Signup duplicate username",
-                                      "request":  {
-                                                      "method":  "POST",
-                                                      "header":  [
-                                                                     {
-                                                                         "key":  "Content-Type",
-                                                                         "value":  "application/json"
-                                                                     }
-                                                                 ],
-                                                      "url":  "{{baseUrl}}/auth/signup",
-                                                      "body":  {
-                                                                   "mode":  "raw",
-                                                                   "raw":  "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
-                                                                   "options":  {
-                                                                                   "raw":  {
-                                                                                               "language":  "json"
-                                                                                           }
-                                                                               }
-                                                               },
-                                                      "auth":  {
-                                                                   "type":  "noauth"
-                                                               }
-                                                  },
-                                      "response":  [
-
-                                                   ]
-                                  }
-                              ]
-                 },
-                 {
-                     "name":  "05 - Alternate User / No Saved Game Scenarios",
-                     "item":  [
-                                  {
-                                      "name":  "Login secondary user (save JWT)",
-                                      "request":  {
-                                                      "method":  "POST",
-                                                      "header":  [
-                                                                     {
-                                                                         "key":  "Content-Type",
-                                                                         "value":  "application/json"
-                                                                     }
-                                                                 ],
-                                                      "url":  "{{baseUrl}}/auth/login",
-                                                      "body":  {
-                                                                   "mode":  "raw",
-                                                                   "raw":  "{\n  \"username\": \"{{secondUsername}}\",\n  \"password\": \"{{secondPassword}}\"\n}",
-                                                                   "options":  {
-                                                                                   "raw":  {
-                                                                                               "language":  "json"
-                                                                                           }
-                                                                               }
-                                                               },
-                                                      "auth":  {
-                                                                   "type":  "noauth"
-                                                               }
-                                                  },
-                                      "response":  [
-
-                                                   ],
-                                      "event":  [
-                                                    {
-                                                        "listen":  "test",
-                                                        "script":  {
-                                                                       "type":  "text/javascript",
-                                                                       "exec":  [
-                                                                                    "let data = {};",
-                                                                                    "try { data = pm.response.json(); } catch (e) {}",
-                                                                                    "const token = data.token || data.jwt || data.jwtToken || data.accessToken;",
-                                                                                    "if (token) pm.collectionVariables.set(\"jwt\", token);",
-                                                                                    "pm.test(\"Login succeeded\", function () {",
-                                                                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
-                                                                                    "});"
-                                                                                ]
-                                                                   }
-                                                    }
-                                                ]
-                                  },
-                                  {
-                                      "name":  "Find game for secondary user (expected no save yet)",
-                                      "request":  {
-                                                      "method":  "GET",
-                                                      "header":  [
-
-                                                                 ],
-                                                      "url":  "{{baseUrl}}/game/findGame"
-                                                  },
-                                      "response":  [
-
-                                                   ]
-                                  },
-                                  {
-                                      "name":  "Start game for secondary user",
-                                      "request":  {
-                                                      "method":  "POST",
-                                                      "header":  [
-
-                                                                 ],
-                                                      "url":  "{{baseUrl}}/game/start"
-                                                  },
-                                      "response":  [
-
-                                                   ],
-                                      "event":  [
-                                                    {
-                                                        "listen":  "test",
-                                                        "script":  {
-                                                                       "type":  "text/javascript",
-                                                                       "exec":  [
-                                                                                    "let data = {};",
-                                                                                    "try { data = pm.response.json(); } catch (e) {}",
-                                                                                    "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
-                                                                                    "if (data.pendingEvent \u0026\u0026 data.pendingEvent.type) {",
-                                                                                    "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
-                                                                                    "  const choices = data.pendingEvent.choices || [];",
-                                                                                    "  if (choices.length \u003e 0 \u0026\u0026 choices[0].code) {",
-                                                                                    "    pm.collectionVariables.set(\"eventChoiceCode\", choices[0].code);",
-                                                                                    "  }",
-                                                                                    "}"
-                                                                                ]
-                                                                   }
-                                                    }
-                                                ]
-                                  },
-                                  {
-                                      "name":  "Re-login primary user",
-                                      "request":  {
-                                                      "method":  "POST",
-                                                      "header":  [
-                                                                     {
-                                                                         "key":  "Content-Type",
-                                                                         "value":  "application/json"
-                                                                     }
-                                                                 ],
-                                                      "url":  "{{baseUrl}}/auth/login",
-                                                      "body":  {
-                                                                   "mode":  "raw",
-                                                                   "raw":  "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
-                                                                   "options":  {
-                                                                                   "raw":  {
-                                                                                               "language":  "json"
-                                                                                           }
-                                                                               }
-                                                               },
-                                                      "auth":  {
-                                                                   "type":  "noauth"
-                                                               },
-                                                      "description":  "Restores {{jwt}} back to the primary user after alternate-user testing."
-                                                  },
-                                      "response":  [
-
-                                                   ],
-                                      "event":  [
-                                                    {
-                                                        "listen":  "test",
-                                                        "script":  {
-                                                                       "type":  "text/javascript",
-                                                                       "exec":  [
-                                                                                    "let data = {};",
-                                                                                    "try { data = pm.response.json(); } catch (e) {}",
-                                                                                    "const token = data.token || data.jwt || data.jwtToken || data.accessToken;",
-                                                                                    "if (token) pm.collectionVariables.set(\"jwt\", token);",
-                                                                                    "pm.test(\"Login succeeded\", function () {",
-                                                                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
-                                                                                    "});"
-                                                                                ]
-                                                                   }
-                                                    }
-                                                ]
-                                  }
-                              ]
-                 }
-             ]
+                        },
+                        {
+                            "name": "Freelance",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": "{{baseUrl}}/game/action",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"action\": \"FREELANCE\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "let data = {};",
+                                            "try { data = pm.response.json(); } catch (e) {}",
+                                            "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
+                                            "if (data.pendingEvent && data.pendingEvent.type) {",
+                                            "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
+                                            "  const choices = data.pendingEvent.choices || [];",
+                                            "  if (choices.length > 0 && choices[0].optionType) {",
+                                            "    pm.collectionVariables.set(\"eventChoice\", choices[0].optionType);",
+                                            "  }",
+                                            "}"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Fix bug",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": "{{baseUrl}}/game/action",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"action\": \"FIX_BUGS\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "let data = {};",
+                                            "try { data = pm.response.json(); } catch (e) {}",
+                                            "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
+                                            "if (data.pendingEvent && data.pendingEvent.type) {",
+                                            "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
+                                            "  const choices = data.pendingEvent.choices || [];",
+                                            "  if (choices.length > 0 && choices[0].optionType) {",
+                                            "    pm.collectionVariables.set(\"eventChoice\", choices[0].optionType);",
+                                            "  }",
+                                            "}"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Rest",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": "{{baseUrl}}/game/action",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"action\": \"REST\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "let data = {};",
+                                            "try { data = pm.response.json(); } catch (e) {}",
+                                            "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
+                                            "if (data.pendingEvent && data.pendingEvent.type) {",
+                                            "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
+                                            "  const choices = data.pendingEvent.choices || [];",
+                                            "  if (choices.length > 0 && choices[0].optionType) {",
+                                            "    pm.collectionVariables.set(\"eventChoice\", choices[0].optionType);",
+                                            "  }",
+                                            "}"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Buy supplies",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": "{{baseUrl}}/game/action",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"action\": \"BUY_SUPPLIES\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "let data = {};",
+                                            "try { data = pm.response.json(); } catch (e) {}",
+                                            "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
+                                            "if (data.pendingEvent && data.pendingEvent.type) {",
+                                            "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
+                                            "  const choices = data.pendingEvent.choices || [];",
+                                            "  if (choices.length > 0 && choices[0].optionType) {",
+                                            "    pm.collectionVariables.set(\"eventChoice\", choices[0].optionType);",
+                                            "  }",
+                                            "}"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Pitch VC",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": "{{baseUrl}}/game/action",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"action\": \"PITCH_VC\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "let data = {};",
+                                            "try { data = pm.response.json(); } catch (e) {}",
+                                            "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
+                                            "if (data.pendingEvent && data.pendingEvent.type) {",
+                                            "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
+                                            "  const choices = data.pendingEvent.choices || [];",
+                                            "  if (choices.length > 0 && choices[0].optionType) {",
+                                            "    pm.collectionVariables.set(\"eventChoice\", choices[0].optionType);",
+                                            "  }",
+                                            "}"
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Resolve pending event",
+                    "item": [
+                        {
+                            "name": "Resolve with cached first choice",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": "{{baseUrl}}/game/event/choice",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"choice\": \"{{eventChoice}}\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "let data = {};",
+                                            "try { data = pm.response.json(); } catch (e) {}",
+                                            "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
+                                            "if (data.pendingEvent && data.pendingEvent.type) {",
+                                            "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
+                                            "  const choices = data.pendingEvent.choices || [];",
+                                            "  if (choices.length > 0 && choices[0].optionType) {",
+                                            "    pm.collectionVariables.set(\"eventChoice\", choices[0].optionType);",
+                                            "  }",
+                                            "}"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Resolve with ACCEPT",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": "{{baseUrl}}/game/event/choice",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"choice\": \"ACCEPT\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "let data = {};",
+                                            "try { data = pm.response.json(); } catch (e) {}",
+                                            "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
+                                            "if (data.pendingEvent && data.pendingEvent.type) {",
+                                            "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
+                                            "  const choices = data.pendingEvent.choices || [];",
+                                            "  if (choices.length > 0 && choices[0].optionType) {",
+                                            "    pm.collectionVariables.set(\"eventChoice\", choices[0].optionType);",
+                                            "  }",
+                                            "}"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Resolve with DECLINE",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": "{{baseUrl}}/game/event/choice",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"choice\": \"DECLINE\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "let data = {};",
+                                            "try { data = pm.response.json(); } catch (e) {}",
+                                            "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
+                                            "if (data.pendingEvent && data.pendingEvent.type) {",
+                                            "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
+                                            "  const choices = data.pendingEvent.choices || [];",
+                                            "  if (choices.length > 0 && choices[0].optionType) {",
+                                            "    pm.collectionVariables.set(\"eventChoice\", choices[0].optionType);",
+                                            "  }",
+                                            "}"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Resolve with TAKE_DEAL",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": "{{baseUrl}}/game/event/choice",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"choice\": \"TAKE_DEAL\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "let data = {};",
+                                            "try { data = pm.response.json(); } catch (e) {}",
+                                            "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
+                                            "if (data.pendingEvent && data.pendingEvent.type) {",
+                                            "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
+                                            "  const choices = data.pendingEvent.choices || [];",
+                                            "  if (choices.length > 0 && choices[0].optionType) {",
+                                            "    pm.collectionVariables.set(\"eventChoice\", choices[0].optionType);",
+                                            "  }",
+                                            "}"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Resolve with PASS",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": "{{baseUrl}}/game/event/choice",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"choice\": \"PASS\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "let data = {};",
+                                            "try { data = pm.response.json(); } catch (e) {}",
+                                            "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
+                                            "if (data.pendingEvent && data.pendingEvent.type) {",
+                                            "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
+                                            "  const choices = data.pendingEvent.choices || [];",
+                                            "  if (choices.length > 0 && choices[0].optionType) {",
+                                            "    pm.collectionVariables.set(\"eventChoice\", choices[0].optionType);",
+                                            "  }",
+                                            "}"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Resolve with REST",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": "{{baseUrl}}/game/event/choice",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"choice\": \"REST\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "let data = {};",
+                                            "try { data = pm.response.json(); } catch (e) {}",
+                                            "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
+                                            "if (data.pendingEvent && data.pendingEvent.type) {",
+                                            "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
+                                            "  const choices = data.pendingEvent.choices || [];",
+                                            "  if (choices.length > 0 && choices[0].optionType) {",
+                                            "    pm.collectionVariables.set(\"eventChoice\", choices[0].optionType);",
+                                            "  }",
+                                            "}"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Resolve with PUSH_FORWARD",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": "{{baseUrl}}/game/event/choice",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"choice\": \"PUSH_FORWARD\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "let data = {};",
+                                            "try { data = pm.response.json(); } catch (e) {}",
+                                            "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
+                                            "if (data.pendingEvent && data.pendingEvent.type) {",
+                                            "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
+                                            "  const choices = data.pendingEvent.choices || [];",
+                                            "  if (choices.length > 0 && choices[0].optionType) {",
+                                            "    pm.collectionVariables.set(\"eventChoice\", choices[0].optionType);",
+                                            "  }",
+                                            "}"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Resolve with REPAIR_NOW",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": "{{baseUrl}}/game/event/choice",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"choice\": \"REPAIR_NOW\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "let data = {};",
+                                            "try { data = pm.response.json(); } catch (e) {}",
+                                            "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
+                                            "if (data.pendingEvent && data.pendingEvent.type) {",
+                                            "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
+                                            "  const choices = data.pendingEvent.choices || [];",
+                                            "  if (choices.length > 0 && choices[0].optionType) {",
+                                            "    pm.collectionVariables.set(\"eventChoice\", choices[0].optionType);",
+                                            "  }",
+                                            "}"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Resolve with DELAY_REPAIR",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "url": "{{baseUrl}}/game/event/choice",
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"choice\": \"DELAY_REPAIR\"\n}",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "let data = {};",
+                                            "try { data = pm.response.json(); } catch (e) {}",
+                                            "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
+                                            "if (data.pendingEvent && data.pendingEvent.type) {",
+                                            "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
+                                            "  const choices = data.pendingEvent.choices || [];",
+                                            "  if (choices.length > 0 && choices[0].optionType) {",
+                                            "    pm.collectionVariables.set(\"eventChoice\", choices[0].optionType);",
+                                            "  }",
+                                            "}"
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "02 - Game State Scenarios",
+            "item": [
+                {
+                    "name": "Start game when one may already be in progress",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": "{{baseUrl}}/game/start",
+                        "description": "Expected to return a handled error if the current user already has an IN_PROGRESS game."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Find game when a save exists",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/game/findGame"
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "let data = {};",
+                                    "try { data = pm.response.json(); } catch (e) {}",
+                                    "if (data.pendingEvent && data.pendingEvent.type) {",
+                                    "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
+                                    "  const choices = data.pendingEvent.choices || [];",
+                                    "  if (choices.length > 0 && choices[0].optionType) {",
+                                    "    pm.collectionVariables.set(\"eventChoice\", choices[0].optionType);",
+                                    "  }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Delete game",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": "{{baseUrl}}/game/delete",
+                        "description": "Deletes the current user's active game."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Find game after delete / no-save state",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/game/findGame"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "03 - Validation and Negative Scenarios",
+            "item": [
+                {
+                    "name": "Action while event is pending (should fail)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/game/action",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"action\": \"TRAVEL\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Use after travel created a pending event. Expected: handled error to resolve the event first."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Resolve event when no event is pending (should fail)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/game/event/choice",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"choice\": \"ACCEPT\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Invalid action enum value",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/game/action",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"action\": \"INVALID_ACTION\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Malformed action body (raw enum string)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/game/action",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "\"TRAVEL\"",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Malformed event choice body",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/game/event/choice",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"choiceCode\": \"ACCEPT\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "description": "Wrong field name on purpose to test validation / binding behavior."
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "04 - Authentication and Authorization Scenarios",
+            "item": [
+                {
+                    "name": "Login with wrong password",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/auth/login",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"WrongPassword123!\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Protected endpoint with no token",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/game/findGame",
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "description": "Auth explicitly disabled for this request."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Protected endpoint with bad token",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/game/findGame",
+                        "description": "Forces an invalid bearer token for this request."
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.request.auth = { type: \"bearer\", bearer: [{ key: \"token\", value: pm.collectionVariables.get(\"badToken\"), type: \"string\" }] };"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Signup duplicate username",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/auth/signup",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "05 - Alternate User / No Saved Game Scenarios",
+            "item": [
+                {
+                    "name": "Login secondary user (save JWT)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/auth/login",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"username\": \"{{secondUsername}}\",\n  \"password\": \"{{secondPassword}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "let data = {};",
+                                    "try { data = pm.response.json(); } catch (e) {}",
+                                    "const token = data.token || data.jwt || data.jwtToken || data.accessToken;",
+                                    "if (token) pm.collectionVariables.set(\"jwt\", token);",
+                                    "pm.test(\"Login succeeded\", function () {",
+                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Find game for secondary user (expected no save yet)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": "{{baseUrl}}/game/findGame"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Start game for secondary user",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": "{{baseUrl}}/game/start"
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "let data = {};",
+                                    "try { data = pm.response.json(); } catch (e) {}",
+                                    "if (data.message) pm.collectionVariables.set(\"lastActionMessage\", data.message);",
+                                    "if (data.pendingEvent && data.pendingEvent.type) {",
+                                    "  pm.collectionVariables.set(\"lastEventType\", data.pendingEvent.type);",
+                                    "  const choices = data.pendingEvent.choices || [];",
+                                    "  if (choices.length > 0 && choices[0].optionType) {",
+                                    "    pm.collectionVariables.set(\"eventChoice\", choices[0].optionType);",
+                                    "  }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Re-login primary user",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "{{baseUrl}}/auth/login",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "description": "Restores {{jwt}} back to the primary user after alternate-user testing."
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "let data = {};",
+                                    "try { data = pm.response.json(); } catch (e) {}",
+                                    "const token = data.token || data.jwt || data.jwtToken || data.accessToken;",
+                                    "if (token) pm.collectionVariables.set(\"jwt\", token);",
+                                    "pm.test(\"Login succeeded\", function () {",
+                                    "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
 }
