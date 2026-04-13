@@ -8,6 +8,7 @@ import com.example.game.exceptions.InvalidActionException;
 import com.example.game.gameLogic.action.ActionResolver;
 import com.example.game.gameLogic.action.ActionResult;
 import com.example.game.gameLogic.action.PlayerAction;
+import com.example.game.gameLogic.records.EventOption;
 import com.example.game.gameLogic.records.EventOptionType;
 import com.example.game.gameLogic.records.PendingEvent;
 import com.example.game.gameLogic.records.TurnResult;
@@ -23,6 +24,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -72,29 +76,30 @@ class GameEngineTest {
 
         assertThatThrownBy(() -> gameEngine.processTurn(gameState, ActionType.FIX_BUGS))
                 .isInstanceOf(InvalidActionException.class)
-                .hasMessage("Action cannot be executed with current resources.");
+                .hasMessage("Action cannot be executed.");
     }
 
-//    @Test
-//    void processTurnAdvancesDayResetsCoffeeStreakAndDoesNotTriggerEventForNonTravel() {
-//        GameState gameState = baseGameState();
-//        gameState.setCoffee(Integer.valueOf(10));
-//        gameState.setCoffeeZeroStreak(Integer.valueOf(3));
-//        ActionResult actionResult = new ActionResult("Rested", List.of("+10 motivation"), false);
-//
-//        when(actionResolver.resolve(ActionType.REST)).thenReturn(playerAction);
-//        when(playerAction.canExecute(gameState)).thenReturn(Boolean.valueOf(true));
-//        when(playerAction.execute(gameState)).thenReturn(actionResult);
-//
-//        TurnResult result = gameEngine.processTurn(gameState, ActionType.REST);
-//
-//        verify(winLossService).evaluate(gameState);
-//        verify(eventService, never()).triggerArrivalEvent(gameState);
-//        assertThat(gameState.getDay()).isEqualTo(2);
-//        assertThat(gameState.getCoffeeZeroStreak()).isZero();
-//        assertThat(result.actionResult()).isEqualTo(actionResult);
-//        assertThat(result.pendingEvent()).isNull();
-//    }
+    @Test
+    void processTurnAdvancesDayResetsCoffeeStreakAndDoesNotTriggerEventForNonTravel() {
+        GameState gameState = baseGameState();
+        gameState.setCoffee(Integer.valueOf(10));
+        gameState.setCoffeeZeroStreak(Integer.valueOf(3));
+        ActionResult actionResult = new ActionResult("Rested", List.of("+10 motivation"), false);
+
+        when(actionResolver.resolve(ActionType.REST)).thenReturn(playerAction);
+        when(playerAction.canExecute(gameState)).thenReturn(Boolean.valueOf(true));
+        when(playerAction.execute(gameState)).thenReturn(actionResult);
+
+        TurnResult result = gameEngine.processTurn(gameState, ActionType.REST);
+
+        verify(winLossService).evaluate(gameState);
+        verify(eventService, never()).triggerArrivalEvent(gameState);
+        assertThat(gameState.getDay()).isEqualTo(2);
+        assertThat(gameState.getCoffeeZeroStreak()).isZero();
+        assertThat(result.actionResult()).isEqualTo(actionResult);
+        assertThat(result.pendingEvent()).isNull();
+        assertThat(result.lossReason()).isNull();
+    }
 
     @Test
     void processTurnTriggersArrivalEventForTravelAndTracksCoffeeDepletion() {
@@ -103,7 +108,7 @@ class GameEngineTest {
         gameState.setCoffeeZeroStreak(Integer.valueOf(1));
         ActionResult actionResult = new ActionResult("Traveled", List.of("-20 gas"), true);
         PendingEvent pendingEvent = new PendingEvent(
-                EventType.FLIGHT_DROP,
+                EventType.AIR_TRAFFIC_BUZZ,
                 "Cheap flight",
                 "A discount appears",
                 List.of(new EventOption(EventOptionType.TAKE_DEAL, "Take it", "Book now"))
@@ -120,7 +125,31 @@ class GameEngineTest {
         verify(eventService).triggerArrivalEvent(gameState);
         assertThat(gameState.getDay()).isEqualTo(2);
         assertThat(gameState.getCoffeeZeroStreak()).isEqualTo(2);
-//        assertThat(result.pendingEvent()).isEqualTo(pendingEvent);
+        assertThat(result.pendingEvent()).isEqualTo(pendingEvent);
+        assertThat(result.actionResult()).isEqualTo(actionResult);
+    }
+
+    @Test
+    void processTurnSkipsArrivalEventAndReturnsLossReasonWhenTurnCausesLoss() {
+        GameState gameState = baseGameState();
+        ActionResult actionResult = new ActionResult("Traveled", List.of("-20 gas"), true);
+
+        when(actionResolver.resolve(ActionType.TRAVEL)).thenReturn(playerAction);
+        when(playerAction.canExecute(gameState)).thenReturn(Boolean.valueOf(true));
+        when(playerAction.execute(gameState)).thenReturn(actionResult);
+        doAnswer(invocation -> {
+            GameState state = invocation.getArgument(0);
+            state.setStatus(GameStatus.LOST);
+            return null;
+        }).when(winLossService).evaluate(any(GameState.class));
+        when(winLossService.getLossReason(gameState)).thenReturn("You ran out of gas.");
+
+        TurnResult result = gameEngine.processTurn(gameState, ActionType.TRAVEL);
+
+        verify(eventService, never()).triggerArrivalEvent(gameState);
+        assertThat(gameState.getDay()).isEqualTo(2);
+        assertThat(result.pendingEvent()).isNull();
+        assertThat(result.lossReason()).isEqualTo("You ran out of gas.");
     }
 
     private static GameState baseGameState() {

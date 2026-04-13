@@ -17,7 +17,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.security.AuthProvider;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -55,11 +54,15 @@ class AuthServiceTest {
         savedUser.setPasswordHash("encoded-password");
 
         when(passwordEncoder.encode("password123")).thenReturn("encoded-password");
-        when(userRepo.save(any(User.class))).thenReturn(savedUser);
+        when(userRepo.save(any(User.class))).thenAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            user.setId(42L);
+            return user;
+        });
 
         RegisterUserResponse result = authService.signup(request);
 
-        assertThat(result).isSameAs(new RegisterUserResponse(savedUser.getId(),savedUser.getUsername()));
+        assertThat(result).isEqualTo(new RegisterUserResponse(savedUser.getId(), savedUser.getUsername()));
         verify(passwordEncoder).encode("password123");
         verify(userRepo).save(any(User.class));
     }

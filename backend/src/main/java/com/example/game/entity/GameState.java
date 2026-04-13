@@ -1,7 +1,6 @@
 package com.example.game.entity;
 
 import com.example.game.audit.AuditableEntity;
-import com.example.game.enums.EventType;
 import com.example.game.enums.GameStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,12 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(
-        name = "game_state",
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uk_user_slot", columnNames = {"user_id", "slot_number"})
-        }
-)
+@Table(name = "game_state")
 public class GameState extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,7 +42,7 @@ public class GameState extends AuditableEntity {
     @Column(name = "location_name", nullable = false)
     private String locationName;
 
-    @Column(nullable = false)
+    @Column(name = "game_day", nullable = false)
     private int day;
 
     @Enumerated(EnumType.STRING)
@@ -64,6 +58,7 @@ public class GameState extends AuditableEntity {
     @Column(columnDefinition = "TEXT")
     private String pendingEventJson;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean eventPending = false;
 }

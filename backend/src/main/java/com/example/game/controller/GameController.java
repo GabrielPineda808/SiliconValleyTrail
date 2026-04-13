@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.http.ResponseEntity;
@@ -85,7 +86,7 @@ public class GameController {
             @ApiResponse(responseCode = "404", description = "No active game or user was found.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<TurnResultResponse> performAction(
-            @NonNull @RequestBody PerformActionRequest action,
+            @Valid @NonNull @RequestBody PerformActionRequest action,
             @Parameter(hidden = true)
             @AuthenticationPrincipal(expression = "username") String username
     ) {
@@ -125,7 +126,7 @@ public class GameController {
             @ApiResponse(responseCode = "404", description = "No active game or user was found.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<TurnResultResponse> eventChoice(
-            @NonNull @RequestBody ResolveEventRequest request,
+            @Valid @NonNull @RequestBody ResolveEventRequest request,
             @Parameter(hidden = true)
             @AuthenticationPrincipal(expression = "username") String username
     ) {

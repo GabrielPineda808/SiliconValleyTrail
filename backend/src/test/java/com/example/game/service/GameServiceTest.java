@@ -1,6 +1,7 @@
 package com.example.game.service;
 
 import com.example.game.dto.response.TurnResultResponse;
+import com.example.game.dto.response.GameStateResponse;
 import com.example.game.entity.GameState;
 import com.example.game.entity.User;
 import com.example.game.gameLogic.action.ActionType;
@@ -35,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import tools.jackson.databind.ObjectMapper;
 
 @ExtendWith(MockitoExtension.class)
 class GameServiceTest {
@@ -57,29 +59,41 @@ class GameServiceTest {
     @Mock
     private WinLossService winLossService;
 
+    @Mock
+    private ObjectMapper objectMapper;
+
     @InjectMocks
     private GameService gameService;
 
-//    @Test
-//    void createGameBuildsAndSavesNewStateWhenNoActiveGameExists() {
-//        User user = buildUser();
-//        when(userRepo.findByUsername("gabe")).thenReturn(Optional.of(user));
-//        when(gameStateRepo.existsByUserId(1L)).thenReturn(false);
-//        when(gameStateRepo.save(any(GameState.class))).thenAnswer(invocation -> {
-//            GameState state = invocation.getArgument(0);
-//            state.setId(99L);
-//            return state;
-//        });
-//
-//        GameState result = gameService.createGame("gabe");
-//
-//        assertThat(result.getId()).isEqualTo(99L);
-//        assertThat(result.getUser()).isSameAs(user);
-//        assertThat(result.getGas()).isEqualTo(100);
-//        assertThat(result.getCash()).isEqualTo(500);
-//        assertThat(result.getLocationName()).isEqualTo("San Jose");
-//        assertThat(result.getStatus()).isEqualTo(GameStatus.IN_PROGRESS);
-//    }
+    @Test
+    void createGameBuildsAndSavesNewStateWhenNoActiveGameExists() {
+        User user = buildUser();
+        GameStateResponse expected = new GameStateResponse(
+                99L,
+                100,
+                500,
+                0,
+                50,
+                100,
+                0,
+                "San Jose",
+                1,
+                GameStatus.IN_PROGRESS,
+                null
+        );
+
+        when(userRepo.findByUsername("gabe")).thenReturn(Optional.of(user));
+        when(gameStateRepo.existsByUserId(1L)).thenReturn(false);
+        when(gameStateRepo.save(any(GameState.class))).thenAnswer(invocation -> {
+            GameState state = invocation.getArgument(0);
+            state.setId(99L);
+            return state;
+        });
+        GameStateResponse result = gameService.createGame("gabe");
+
+        assertThat(result).isEqualTo(expected);
+        verify(gameStateRepo).save(any(GameState.class));
+    }
 
     @Test
     void createGameThrowsWhenActiveGameAlreadyExists() {
@@ -125,8 +139,8 @@ class GameServiceTest {
         assertThat(response.pendingEvent().type()).isEqualTo(EventType.VC_FUNDING_OFFER);
         assertThat(response.pendingEvent().choices())
                 .containsExactly(
-                        new EventOption("Accept", EventOptionType.ACCEPT),
-                        new EventOption("Decline", EventOptionType.DECLINE)
+                        new EventOption(EventOptionType.ACCEPT, "Accept", "Take the money"),
+                        new EventOption(EventOptionType.DECLINE, "Decline", "Stay lean")
                 );
     }
 
