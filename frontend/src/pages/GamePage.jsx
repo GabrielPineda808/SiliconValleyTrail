@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import ErrorBanner from '../components/ErrorBanner'
 import Modal from '../components/Modal'
 import StatCard from '../components/StatCard'
@@ -13,6 +13,18 @@ function GamePage({ game, latestOutcome, onPerformAction, onResolveEvent, onQuit
 
   const gameFinished = isGameOver(game.status)
   const pendingEvent = game.pendingEvent
+  const [displayedEvent, setDisplayedEvent] = useState(pendingEvent)
+
+  useEffect(() => {
+    if (pendingEvent) {
+      setDisplayedEvent(pendingEvent)
+      return
+    }
+
+    if (!resolvingChoice) {
+      setDisplayedEvent(null)
+    }
+  }, [pendingEvent, resolvingChoice])
 
   const statusCopy = useMemo(() => {
     if (game.status === 'WON') {
@@ -144,16 +156,16 @@ function GamePage({ game, latestOutcome, onPerformAction, onResolveEvent, onQuit
 
       <Modal
         disableClose
-        open={Boolean(pendingEvent)}
-        subtitle={pendingEvent?.type ?? 'Pending event'}
-        title={pendingEvent?.title ?? 'Resolve current event'}
+        open={Boolean(displayedEvent)}
+        subtitle={displayedEvent?.type ?? 'Pending event'}
+        title={displayedEvent?.title ?? 'Resolve current event'}
       >
-        <p className="modal-copy">{pendingEvent?.description}</p>
+        <p className="modal-copy">{displayedEvent?.description}</p>
 
         <ErrorBanner message={eventError} title="Event resolution failed" />
 
         <div className="event-choice-list">
-          {pendingEvent?.choices?.map((choice) => (
+          {displayedEvent?.choices?.map((choice) => (
             <button
               key={choice.id}
               className="action-card"
@@ -167,6 +179,12 @@ function GamePage({ game, latestOutcome, onPerformAction, onResolveEvent, onQuit
               <span>{choice.description || `Submit ${choice.value}`}</span>
             </button>
           ))}
+        </div>
+
+        <div className="modal-actions">
+          <button className="ghost-button" disabled={resolvingChoice !== ''} onClick={onQuit} type="button">
+            Quit Game
+          </button>
         </div>
       </Modal>
     </section>

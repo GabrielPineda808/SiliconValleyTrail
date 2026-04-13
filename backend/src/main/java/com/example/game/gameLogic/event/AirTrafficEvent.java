@@ -60,30 +60,29 @@ public class AirTrafficEvent implements GameEvent {
         );
     }
 
-    private String buildDescription(GameLocation location, AirTrafficData traffic, Traffic band) {
-        String sourceNote = traffic.fallback() ? " Fallback traffic data was used." : "";
+    private String buildDescription(GameLocation location, AirTrafficData trafficData, Traffic traffic) {
+        String sourceNote = trafficData.fallback() ? " Fallback traffic data was used." : "";
 
-        String humanText = switch (band) {
+        String humanText = switch (traffic) {
             case QUIET -> "The skies over " + location.name()
-                    + " are unusually calm. Only " + traffic.nearbyAircraftCount()
+                    + " are unusually calm. Only " + trafficData.nearbyAircraftCount()
                     + " nearby aircraft are showing up." + sourceNote;
             case MODERATE -> "Air traffic around " + location.name()
-                    + " is steady, with about " + traffic.nearbyAircraftCount()
+                    + " is steady, with about " + trafficData.nearbyAircraftCount()
                     + " nearby aircraft." + sourceNote;
             case BUSY -> location.name()
-                    + " feels alive. Roughly " + traffic.nearbyAircraftCount()
+                    + " feels alive. Roughly " + trafficData.nearbyAircraftCount()
                     + " aircraft are moving through nearby airspace." + sourceNote;
             case JAMMED -> "The airspace near " + location.name()
-                    + " is packed. Around " + traffic.nearbyAircraftCount()
+                    + " is packed. Around " + trafficData.nearbyAircraftCount()
                     + " aircraft are nearby, and the whole region feels intense." + sourceNote;
         };
 
-        String metadata = " [traffic_count=" + traffic.nearbyAircraftCount()
-                + "][fallback=" + traffic.fallback() + "]";
+        String metadata = " [traffic_count=" + trafficData.nearbyAircraftCount()
+                + "][fallback=" + trafficData.fallback() + "]";
 
         return humanText + metadata;
     }
-
 
     @Override
     public EventResult resolve(GameState gameState, EventOptionType optionType) {
@@ -97,8 +96,8 @@ public class AirTrafficEvent implements GameEvent {
         };
     }
 
-    private EventResult resolvePushForward(GameState gameState, Traffic band, int aircraftCount) {
-        return switch (band) {
+    private EventResult resolvePushForward(GameState gameState, Traffic traffic, int aircraftCount) {
+        return switch (traffic) {
             case QUIET -> {
                 int bugsFixed = 2;
                 gameState.setBugs(Math.max(0, gameState.getBugs() - bugsFixed));
@@ -158,8 +157,8 @@ public class AirTrafficEvent implements GameEvent {
         };
     }
 
-    private EventResult resolveRest(GameState gameState, Traffic band, int aircraftCount) {
-        return switch (band) {
+    private EventResult resolveRest(GameState gameState, Traffic traffic, int aircraftCount) {
+        return switch (traffic) {
             case QUIET -> {
                 int motivationGain = 2;
                 gameState.setMotivation(gameState.getMotivation() + motivationGain);
@@ -238,8 +237,7 @@ public class AirTrafficEvent implements GameEvent {
     }
 
     private int extractAircraftCount(String description) {
-        Pattern pattern = Pattern.compile("\\b(\\d+)\\b");
-        Matcher matcher = pattern.matcher(description);
+        Matcher matcher = Pattern.compile("\\[traffic_count=(\\d+)]").matcher(description);
 
         if (matcher.find()) {
             return Integer.parseInt(matcher.group(1));
@@ -251,6 +249,14 @@ public class AirTrafficEvent implements GameEvent {
     }
 
     private boolean extractFallback(String description) {
-        return description != null && description.contains("Fallback traffic data was used.");
+        Matcher matcher = Pattern.compile("\\[fallback=(true|false)]").matcher(description);
+
+        if (matcher.find()) {
+            return Boolean.parseBoolean(matcher.group(1));
+        }
+
+        throw new IllegalStateException(
+                "Could not extract fallback flag from description: " + description
+        );
     }
 }

@@ -7,7 +7,7 @@ This repository currently contains a **Spring Boot 4 REST API** implementation. 
 ## Demo
 
 - Repo: `https://github.com/GabrielPineda808/SiliconValleyTrail`
-- Recording / deployed URL: **Coming Soon**
+- Recording / deployed URL: `https://siliconvalleytrail.onrender.com/`
 
 ## What the game does
 
@@ -41,9 +41,130 @@ This project integrates public APIs that affect gameplay rather than only displa
 
 The game also includes **mock/fallback clients** so it can continue running when external APIs fail or are unavailable.
 
+### External API payloads used by the game
+
+The backend does not rely on full provider payloads. It reads a small subset of fields and maps those into internal records used by event logic.
+
+#### Open-Meteo (`/v1/forecast`)
+
+Request shape used by this project:
+
+```text
+GET https://api.open-meteo.com/v1/forecast
+  ?latitude=<location-lat>
+  &longitude=<location-lon>
+  &current=temperature_2m,weather_code
+```
+
+Example payload from Open-Meteo:
+
+```json
+{
+  "latitude": 37.3382,
+  "longitude": -121.8863,
+  "generationtime_ms": 0.041,
+  "utc_offset_seconds": 0,
+  "timezone": "GMT",
+  "timezone_abbreviation": "GMT",
+  "elevation": 24.0,
+  "current_units": {
+    "time": "iso8601",
+    "interval": "seconds",
+    "temperature_2m": "°C",
+    "weather_code": "wmo code"
+  },
+  "current": {
+    "time": "2026-04-13T03:30",
+    "interval": 900,
+    "temperature_2m": 18.6,
+    "weather_code": 1
+  }
+}
+```
+
+Fields consumed by backend weather logic:
+
+- `current.temperature_2m`
+- `current.weather_code`
+
+Mapped internally to:
+
+- `WeatherData.temperature`
+- `WeatherData.weatherCode`
+- `WeatherData.fallback` (set by provider/fallback path, not Open-Meteo)
+
+#### OpenSky Network (`/api/states/all`)
+
+Request shape used by this project:
+
+```text
+GET https://opensky-network.org/api/states/all
+  ?lamin=<lat-0.18>
+  &lomin=<lon-0.18>
+  &lamax=<lat+0.18>
+  &lomax=<lon+0.18>
+```
+
+Example payload from OpenSky:
+
+```json
+{
+  "time": 1776047700,
+  "states": [
+    [
+      "a1b2c3",
+      "UAL123 ",
+      "United States",
+      1776047697,
+      1776047697,
+      -121.91,
+      37.36,
+      240.3,
+      false,
+      75.2,
+      182.1,
+      0.0,
+      null,
+      243.8,
+      "7000",
+      false,
+      0
+    ],
+    [
+      "d4e5f6",
+      "SWA890 ",
+      "United States",
+      1776047698,
+      1776047698,
+      -121.75,
+      37.42,
+      300.1,
+      false,
+      68.4,
+      175.0,
+      -0.4,
+      null,
+      302.7,
+      "7110",
+      false,
+      0
+    ]
+  ]
+}
+```
+
+Fields consumed by backend flight logic:
+
+- `states` (array length used to estimate nearby traffic)
+
+Mapped internally to:
+
+- `AirTrafficData.nearbyAircraftCount`
+- `AirTrafficData.fallback` (set by provider/fallback path, not OpenSky)
+
 ## Tech stack
 
-- Java 25
+- Java 21
 - Spring Boot 4.0.5
 - Spring Web MVC
 - Spring Security + JWT
@@ -91,7 +212,7 @@ The game also includes **mock/fallback clients** so it can continue running when
 
 Install the following on a fresh machine:
 
-- **Java 25**
+- **Java 21**
 - **PostgreSQL**
 - **Git**
 
@@ -258,6 +379,50 @@ curl -X POST http://localhost:8080/game/event/choice \
 ```
 
 The valid `choice` values depend on the event returned by the backend.
+
+### Event response contract (frontend integration)
+
+The frontend should treat pending events as part of game state and derive modal visibility from `pendingEvent`.
+
+`GET /game/findGame` and `POST /game/action` may return:
+
+```json
+{
+  "gameId": 42,
+  "gas": 8,
+  "cash": 12,
+  "bugs": 3,
+  "coffee": 5,
+  "motivation": 6,
+  "locationIndex": 4,
+  "locationName": "Palo Alto",
+  "day": 7,
+  "status": "IN_PROGRESS",
+  "pendingEvent": {
+    "type": "WEATHER_DELAY",
+    "title": "Heavy rain slows traffic",
+    "description": "Choose how your team handles the delay.",
+    "choices": [
+      {
+        "optionType": "ACCEPT",
+        "label": "Wait it out",
+        "description": "Lose time, avoid extra risk."
+      },
+      {
+        "optionType": "DECLINE",
+        "label": "Push through",
+        "description": "Risk additional penalties for faster progress."
+      }
+    ]
+  }
+}
+```
+
+Notes:
+
+- While `pendingEvent` is present, normal actions should be disabled.
+- Event choices are submitted as `choice` to `POST /game/event/choice`.
+- Enum values are provided as `optionType` in the backend response and should be preserved when sent back as `choice`.
 
 ### Delete the active game
 

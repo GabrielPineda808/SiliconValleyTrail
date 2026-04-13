@@ -32,11 +32,11 @@ export const ACTION_OPTIONS = [
 ]
 
 function normalizePendingEventChoice(choice, index) {
-  const value = choice.choice ?? choice.optionType ?? null
+  const value = choice.choice ?? choice.optionType ?? choice.value ?? null
 
   return {
-    id: `${value ?? index}-${choice.code ?? choice.label ?? 'choice'}`,
-    label: choice.code ?? choice.label ?? String(value ?? `Choice ${index + 1}`),
+    id: choice.id ?? `${String(value ?? 'choice')}-${index}`,
+    label: choice.label ?? choice.code ?? String(value ?? `Choice ${index + 1}`),
     value,
     description: choice.description ?? '',
   }
@@ -53,7 +53,7 @@ export function normalizePendingEvent(event) {
     description:
       event.description ?? 'Resolve the current event before taking another action.',
     choices: Array.isArray(event.choices)
-      ? event.choices.map(normalizePendingEventChoice).filter((choice) => choice.value)
+      ? event.choices.map(normalizePendingEventChoice).filter((choice) => choice.value !== null)
       : [],
   }
 }

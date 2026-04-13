@@ -1,7 +1,5 @@
 package com.example.game.gameLogic.event;
 
-
-
 import com.example.game.entity.GameState;
 import com.example.game.enums.EventType;
 import com.example.game.gameLogic.RandomProvider;
@@ -23,6 +21,15 @@ import java.util.regex.Pattern;
 @Component
 @RequiredArgsConstructor
 public class WeatherDelayEvent implements GameEvent {
+
+    private static final Pattern TEMPERATURE_PATTERN =
+            Pattern.compile("\\[temperature_f=(\\d+(?:\\.\\d+)?)\\]");
+
+    private static final Pattern WEATHER_CODE_PATTERN =
+            Pattern.compile("\\[weather_code=(-?\\d+)\\]");
+
+    private static final Pattern FALLBACK_PATTERN =
+            Pattern.compile("\\[fallback=(true|false)\\]");
 
     private final WeatherProvider weatherProvider;
     private final LocationRegistry locationRegistry;
@@ -131,25 +138,29 @@ public class WeatherDelayEvent implements GameEvent {
         );
     }
 
-
-
     private String buildDescription(GameLocation location, WeatherData weatherData, Weather weather) {
-        String sourceNote = weatherData.fallback() ? " Fallback weather data was used." : "";
+        String source = weatherData.fallback() ? " Fallback weather data was used." : "";
 
-        return switch (weather) {
+        String humanText = switch (weather) {
             case CLEAR -> "The skies over " + location.name() + " are clear and it's " + weatherData.temperature()
-                    + "F. Conditions are excellent for momentum." + sourceNote;
+                    + "F. Conditions are excellent for momentum." + source;
             case CLOUDY -> "Cloud cover hangs over " + location.name() + " at " + weatherData.temperature()
-                    + "F. Not terrible, not inspiring." + sourceNote;
+                    + "F. Not terrible, not inspiring." + source;
             case FOGGY -> "Dense fog sits over " + location.name() + " and the temperature is "
-                    + weatherData.temperature() + "F. Visibility is poor." + sourceNote;
+                    + weatherData.temperature() + "F. Visibility is poor." + source;
             case DRIZZLE -> "A light drizzle falls in " + location.name() + " at " + weatherData.temperature()
-                    + "F. The team can work through it, but morale dips." + sourceNote;
+                    + "F. The team can work through it, but morale dips." + source;
             case RAIN -> "Rain is hitting " + location.name() + " and it's " + weatherData.temperature()
-                    + "F. Conditions are rough." + sourceNote;
+                    + "F. Conditions are rough." + source;
             case THUNDER -> "Thunderstorms are rolling through " + location.name() + " at "
-                    + weatherData.temperature() + "F. This could wreck the day." + sourceNote;
+                    + weatherData.temperature() + "F. This could wreck the day." + source;
         };
+
+        String metadata = " [temperature_f=" + weatherData.temperature()
+                + "][weather_code=" + weatherData.weatherCode()
+                + "][fallback=" + weatherData.fallback() + "]";
+
+        return humanText + metadata;
     }
 
     @Override
@@ -358,20 +369,18 @@ public class WeatherDelayEvent implements GameEvent {
 
             String description = pendingEvent.description();
 
-            double temperatureF = extractTemperature(description);
-            int weatherCode = extractWeatherCode(description);
-
-            boolean fallback = description.contains("Fallback weather data was used.");
-
-            return new WeatherData(temperatureF, weatherCode, fallback);
+            return new WeatherData(
+                    extractTemperature(description),
+                    extractWeatherCode(description),
+                    extractFallback(description)
+            );
         } catch (Exception e) {
             throw new IllegalStateException("Failed to read weather event data", e);
         }
     }
 
     private double extractTemperature(String description) {
-        Pattern pattern = Pattern.compile("(\\d+(?:\\.\\d+)?)F");
-        Matcher matcher = pattern.matcher(description);
+        Matcher matcher = TEMPERATURE_PATTERN.matcher(description);
 
         if (matcher.find()) {
             return Double.parseDouble(matcher.group(1));
@@ -381,16 +390,22 @@ public class WeatherDelayEvent implements GameEvent {
     }
 
     private int extractWeatherCode(String description) {
-        String lower = description.toLowerCase();
+        Matcher matcher = WEATHER_CODE_PATTERN.matcher(description);
 
-        if (lower.contains("clear")) return 0;
-        if (lower.contains("cloud")) return 3;
-        if (lower.contains("fog")) return 45;
-        if (lower.contains("drizzle")) return 53;
-        if (lower.contains("rain")) return 61;
-        if (lower.contains("snow")) return 71;
-        if (lower.contains("thunder")) return 95;
+        if (matcher.find()) {
+            return Integer.parseInt(matcher.group(1));
+        }
 
-        throw new IllegalStateException("Could not infer weather code from description: " + description);
+        throw new IllegalStateException("Could not extract weather code from description: " + description);
+    }
+
+    private boolean extractFallback(String description) {
+        Matcher matcher = FALLBACK_PATTERN.matcher(description);
+
+        if (matcher.find()) {
+            return Boolean.parseBoolean(matcher.group(1));
+        }
+
+        throw new IllegalStateException("Could not extract fallback flag from description: " + description);
     }
 }
