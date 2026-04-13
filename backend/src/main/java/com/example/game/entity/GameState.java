@@ -61,8 +61,6 @@ public class GameState extends AuditableEntity {
     @Column(name = "state_json", columnDefinition = "TEXT")
     private String stateJson;
 
-
-
     @Column(columnDefinition = "TEXT")
     private String pendingEventJson;
 

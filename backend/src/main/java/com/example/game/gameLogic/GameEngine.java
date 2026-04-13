@@ -44,12 +44,13 @@ public class GameEngine {
         updateCoffeeZeroStreak(gameState);
 
         winLossService.evaluate(gameState);
-
+        System.out.println("status = " + gameState.getStatus());
+        System.out.println("travelOccurred = " + actionResult.travelOccurred());
         PendingEvent pendingEvent = null;
         if (gameState.getStatus() == GameStatus.IN_PROGRESS && actionResult.travelOccurred()) {
             pendingEvent = eventService.triggerArrivalEvent(gameState);
         }
-
+        System.out.println(pendingEvent);
         gameState.setDay(gameState.getDay() + 1);
 
         String lossReason = gameState.getStatus() == GameStatus.LOST

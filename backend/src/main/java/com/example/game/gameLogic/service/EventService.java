@@ -36,6 +36,7 @@ public class EventService {
         );
 
         PendingEvent result = selected.createPendingEvent(gameState);
+        System.out.println(result);
 
         savePendingEvent(gameState,result);
 

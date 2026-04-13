@@ -24,6 +24,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
 @Service
 @Getter
@@ -37,6 +38,7 @@ public class GameService {
     private final LocationRegistry locationRegistry;
     private final EventService eventService;
     private final WinLossService winLossService;
+    private final ObjectMapper objectMapper;
 
     public GameStateResponse createGame(String username) {
         User user = userRepo.findByUsername(username).orElseThrow(()-> new UserNotFoundException("User not found"));
@@ -49,17 +51,22 @@ public class GameService {
         }
         gameState = buildNewGame(user);
         gameStateRepo.save(gameState);
-        return GameStateResponse.from(gameState);
+        return GameStateResponse.from(gameState, objectMapper);
 
     }
     @Transactional(readOnly = true)
     public GameStateResponse getGame(String username) {
-        User user = userRepo.findByUsername(username).orElseThrow(()-> new UserNotFoundException("User not found"));
+        User user = userRepo.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         GameState gameState = gameStateRepo.findStateByUserAndStatus(user, GameStatus.IN_PROGRESS)
                 .orElseThrow(() -> new GameNotFoundException("No saved game found"));
 
-        return GameStateResponse.from(gameState);
+        System.out.println("loaded game id = " + gameState.getId());
+        System.out.println("loaded pendingEventJson = " + gameState.getPendingEventJson());
+        System.out.println("loaded eventPending = " + gameState.isEventPending());
+
+        return GameStateResponse.from(gameState,objectMapper);
     }
 
     public GameState createOrOverrideGame(String username) {
@@ -96,7 +103,13 @@ public class GameService {
 
         TurnResult turnResult = gameEngine.processTurn(gameState, actionType);
 
+        System.out.println("before save pendingEventJson = " + turnResult.gameState().getPendingEventJson());
+        System.out.println("before save eventPending = " + turnResult.gameState().isEventPending());
+
         GameState saved = gameStateRepo.save(turnResult.gameState());
+
+        System.out.println("after save pendingEventJson = " + saved.getPendingEventJson());
+        System.out.println("after save eventPending = " + saved.isEventPending());
 
         return TurnResultResponse.from(
                 saved,

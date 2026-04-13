@@ -1,8 +1,7 @@
 package com.example.game.enums;
 
 public enum EventType {
-    FLIGHT_DROP,
-    WEATHER_DELAY,
+    AIR_TRAFFIC_BUZZ,
     VC_FUNDING_OFFER,
     HACKATHON_NEARBY,
     TECH_RECRUITER,
@@ -10,5 +9,6 @@ public enum EventType {
     OPEN_SOURCE_DRAMA,
     HARDWARE_FAILURE,
     TEAM_MEMBER_QUITS,
-    VIRAL_TWEET
+    VIRAL_TWEET,
+    WEATHER_SHIFT
 }

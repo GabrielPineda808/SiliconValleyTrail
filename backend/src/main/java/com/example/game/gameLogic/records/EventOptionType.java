@@ -9,6 +9,8 @@ public enum EventOptionType {
     IGNORE,
     PUSH_THROUGH,
     PLAY_IT_SAFE,
+    PUSH_FORWARD,
+    REST,
     REPAIR_NOW,
     DELAY_REPAIR,
     OFFER_COUNTER,

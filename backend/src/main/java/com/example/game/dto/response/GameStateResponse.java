@@ -3,8 +3,7 @@ package com.example.game.dto.response;
 import com.example.game.entity.GameState;
 import com.example.game.enums.GameStatus;
 import com.example.game.gameLogic.records.PendingEvent;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 
 public record GameStateResponse(
@@ -18,11 +17,10 @@ public record GameStateResponse(
         String locationName,
         int day,
         GameStatus status,
-        PendingEventResponse eventJson
+        PendingEventResponse pendingEvent
 
 ) {
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-    public static GameStateResponse from(GameState gameState) {
+    public static GameStateResponse from(GameState gameState, ObjectMapper objectMapper) {
         return new GameStateResponse(
                 gameState.getId(),
                 gameState.getGas(),
@@ -34,11 +32,11 @@ public record GameStateResponse(
                 gameState.getLocationName(),
                 gameState.getDay(),
                 gameState.getStatus(),
-                toPendingEventResponse(gameState.getPendingEventJson())
+                toPendingEventResponse(gameState.getPendingEventJson(), objectMapper)
         );
     }
 
-    private static PendingEventResponse toPendingEventResponse(String json) {
+    private static PendingEventResponse toPendingEventResponse(String json,ObjectMapper objectMapper) {
         if (json == null || json.isBlank()) {
             return null;
         }
@@ -46,7 +44,7 @@ public record GameStateResponse(
         try {
             PendingEvent pendingEvent = objectMapper.readValue(json, PendingEvent.class);
             return PendingEventResponse.from(pendingEvent);
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             throw new IllegalStateException("Invalid pending event JSON", e);
         }
     }
